@@ -18,6 +18,32 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # 🔧 DEBUG STEP: Show environment and run tests manually
+      - name: Debug: Show environment and run tests
+        run: |
+          echo "=== 🐘 PHP Version ==="
+          php -v
+          
+          echo "=== 📦 Composer Install ==="
+          composer install --no-interaction --prefer-dist
+          
+          echo "=== 🧪 Run PHPUnit Tests ==="
+          ./vendor/bin/phpunit tests --testdox --no-coverage || echo "⚠️ Tests failed (exit code: $?)"
+          
+          echo "=== 🎨 Run PHPCS Linter ==="
+          ./vendor/bin/phpcs --standard=PSR12 src/ tests/ || echo "⚠️ Linter failed (exit code: $?)"
+          
+          echo "=== 📁 Project Structure ==="
+          echo "Files in src/:"
+          find src -name "*.php" 2>/dev/null | head -20 || echo "(no src/ directory)"
+          echo "Files in tests/:"
+          find tests -name "*.php" 2>/dev/null | head -20 || echo "(no tests/ directory)"
+          
+          echo "=== 🔍 composer.json autoload section ==="
+          grep -A 10 '"autoload"' composer.json || echo "(no autoload section)"
+          
+          echo "=== ✅ Debug step complete ==="
+
       - name: Hexlet project check
         uses: hexlet/project-action@release
         with:
