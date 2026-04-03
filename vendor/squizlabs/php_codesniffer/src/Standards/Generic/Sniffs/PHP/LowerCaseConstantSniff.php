@@ -3,8 +3,7 @@
  * Checks that all uses of true, false and null are lowercase.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -18,11 +17,21 @@ class LowerCaseConstantSniff implements Sniff
 {
 
     /**
+     * A list of tokenizers this sniff supports.
+     *
+     * @var array
+     */
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+    ];
+
+    /**
      * The tokens this sniff is targetting.
      *
-     * @var array<int|string, int|string>
+     * @var array
      */
-    private const TARGET_TOKENS = [
+    private $targets = [
         T_TRUE  => T_TRUE,
         T_FALSE => T_FALSE,
         T_NULL  => T_NULL,
@@ -33,19 +42,25 @@ class LowerCaseConstantSniff implements Sniff
      *
      * @var array<int|string, int|string>
      */
-    private const PROPERTY_TYPE_TOKENS = (Tokens::NAME_TOKENS + [
+    private $propertyTypeTokens = [
         T_CALLABLE               => T_CALLABLE,
         T_SELF                   => T_SELF,
         T_PARENT                 => T_PARENT,
         T_FALSE                  => T_FALSE,
         T_TRUE                   => T_TRUE,
         T_NULL                   => T_NULL,
+        T_STRING                 => T_STRING,
+        T_NAME_QUALIFIED         => T_NAME_QUALIFIED,
+        T_NAME_FULLY_QUALIFIED   => T_NAME_FULLY_QUALIFIED,
+        T_NAME_RELATIVE          => T_NAME_RELATIVE,
+        T_NS_SEPARATOR           => T_NS_SEPARATOR,
+        T_NAMESPACE              => T_NAMESPACE,
         T_TYPE_UNION             => T_TYPE_UNION,
         T_TYPE_INTERSECTION      => T_TYPE_INTERSECTION,
         T_TYPE_OPEN_PARENTHESIS  => T_TYPE_OPEN_PARENTHESIS,
         T_TYPE_CLOSE_PARENTHESIS => T_TYPE_CLOSE_PARENTHESIS,
         T_NULLABLE               => T_NULLABLE,
-    ]);
+    ];
 
 
     /**
@@ -55,10 +70,10 @@ class LowerCaseConstantSniff implements Sniff
      */
     public function register()
     {
-        $targets = self::TARGET_TOKENS;
+        $targets = $this->targets;
 
         // Register scope modifiers to filter out property type declarations.
-        $targets  += Tokens::SCOPE_MODIFIERS;
+        $targets  += Tokens::$scopeModifiers;
         $targets[] = T_VAR;
         $targets[] = T_STATIC;
         $targets[] = T_READONLY;
@@ -74,7 +89,8 @@ class LowerCaseConstantSniff implements Sniff
         $targets[] = T_CONST;
 
         return $targets;
-    }
+
+    }//end register()
 
 
     /**
@@ -88,7 +104,7 @@ class LowerCaseConstantSniff implements Sniff
      *                  called again on the current file until the returned stack
      *                  pointer is reached.
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -119,14 +135,14 @@ class LowerCaseConstantSniff implements Sniff
          * declarations, in which case, it is correct to skip over them.
          */
 
-        if (isset(Tokens::SCOPE_MODIFIERS[$tokens[$stackPtr]['code']]) === true
+        if (isset(Tokens::$scopeModifiers[$tokens[$stackPtr]['code']]) === true
             || $tokens[$stackPtr]['code'] === T_VAR
             || $tokens[$stackPtr]['code'] === T_STATIC
             || $tokens[$stackPtr]['code'] === T_READONLY
             || $tokens[$stackPtr]['code'] === T_FINAL
             || $tokens[$stackPtr]['code'] === T_ABSTRACT
         ) {
-            $skipOver = (Tokens::EMPTY_TOKENS + self::PROPERTY_TYPE_TOKENS);
+            $skipOver = (Tokens::$emptyTokens + $this->propertyTypeTokens);
             $skipTo   = $phpcsFile->findNext($skipOver, ($stackPtr + 1), null, true);
             if ($skipTo !== false) {
                 return $skipTo;
@@ -157,7 +173,7 @@ class LowerCaseConstantSniff implements Sniff
             }
 
             // Do a quick check if any of the targets exist in the declaration.
-            $found = $phpcsFile->findNext(self::TARGET_TOKENS, $tokens[$stackPtr]['parenthesis_opener'], $end);
+            $found = $phpcsFile->findNext($this->targets, $tokens[$stackPtr]['parenthesis_opener'], $end);
             if ($found === false) {
                 // Skip forward, no need to examine these tokens again.
                 return $end;
@@ -176,7 +192,7 @@ class LowerCaseConstantSniff implements Sniff
                 }
 
                 for ($i = $param['default_token']; $i < $paramEnd; $i++) {
-                    if (isset(self::TARGET_TOKENS[$tokens[$i]['code']]) === true) {
+                    if (isset($this->targets[$tokens[$i]['code']]) === true) {
                         $this->processConstant($phpcsFile, $i);
                     }
                 }
@@ -184,11 +200,12 @@ class LowerCaseConstantSniff implements Sniff
 
             // Skip over return type declarations.
             return $end;
-        }
+        }//end if
 
         // Handle everything else.
         $this->processConstant($phpcsFile, $stackPtr);
-    }
+
+    }//end process()
 
 
     /**
@@ -200,7 +217,7 @@ class LowerCaseConstantSniff implements Sniff
      *
      * @return void
      */
-    protected function processConstant(File $phpcsFile, int $stackPtr)
+    protected function processConstant(File $phpcsFile, $stackPtr)
     {
         $tokens   = $phpcsFile->getTokens();
         $keyword  = $tokens[$stackPtr]['content'];
@@ -226,5 +243,8 @@ class LowerCaseConstantSniff implements Sniff
         } else {
             $phpcsFile->recordMetric($stackPtr, 'PHP constant case', 'lower');
         }
-    }
-}
+
+    }//end processConstant()
+
+
+}//end class

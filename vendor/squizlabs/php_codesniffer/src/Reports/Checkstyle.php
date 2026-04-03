@@ -3,8 +3,7 @@
  * Checkstyle report for PHP_CodeSniffer.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -33,7 +32,7 @@ class Checkstyle implements Report
      *
      * @return bool
      */
-    public function generateFileReport(array $report, File $phpcsFile, bool $showSources = false, int $width = 80)
+    public function generateFileReport($report, File $phpcsFile, $showSources=false, $width=80)
     {
         $out = new XMLWriter;
         $out->openMemory();
@@ -64,13 +63,14 @@ class Checkstyle implements Report
                     $out->endElement();
                 }
             }
-        }
+        }//end foreach
 
         $out->endElement();
         echo $out->flush();
 
         return true;
-    }
+
+    }//end generateFileReport()
 
 
     /**
@@ -90,19 +90,22 @@ class Checkstyle implements Report
      * @return void
      */
     public function generate(
-        string $cachedData,
-        int $totalFiles,
-        int $totalErrors,
-        int $totalWarnings,
-        int $totalFixable,
-        bool $showSources = false,
-        int $width = 80,
-        bool $interactive = false,
-        bool $toScreen = true
+        $cachedData,
+        $totalFiles,
+        $totalErrors,
+        $totalWarnings,
+        $totalFixable,
+        $showSources=false,
+        $width=80,
+        $interactive=false,
+        $toScreen=true
     ) {
-        echo '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL;
-        echo '<checkstyle version="' . Config::VERSION . '">' . PHP_EOL;
+        echo '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL;
+        echo '<checkstyle version="'.Config::VERSION.'">'.PHP_EOL;
         echo $cachedData;
-        echo '</checkstyle>' . PHP_EOL;
-    }
-}
+        echo '</checkstyle>'.PHP_EOL;
+
+    }//end generate()
+
+
+}//end class

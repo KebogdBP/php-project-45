@@ -26,6 +26,12 @@ class ComposerStaticInit9e8283bbf5f3d3dc34a300ae8e697997
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '801c31d8ed748cfa537fa45402288c95' => __DIR__ . '/..' . '/psy/psysh/src/functions.php',
         'be01b9b16925dcb22165c40b46681ac6' => __DIR__ . '/..' . '/wp-cli/php-cli-tools/lib/cli/cli.php',
+        '9b407530b23dcc568f313d4049fe7d34' => __DIR__ . '/../..' . '/src/Engine.php',
+        '09771c02c62ed61fe5f08b0d363cb1e7' => __DIR__ . '/../..' . '/src/Even.php',
+        '2c36508411989c7fabb6953348b44eae' => __DIR__ . '/../..' . '/src/Calc.php',
+        '88d19f3d51aa9ff74ecf47d74604a15a' => __DIR__ . '/../..' . '/src/Gcd.php',
+        '266d25ad465424569962316355f74ad5' => __DIR__ . '/../..' . '/src/Progression.php',
+        'ce883528153890562ce62416d69c89c9' => __DIR__ . '/../..' . '/src/Prime.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -53,7 +59,6 @@ class ComposerStaticInit9e8283bbf5f3d3dc34a300ae8e697997
             'Psr\\Container\\' => 14,
             'Psr\\Clock\\' => 10,
             'Php\\Package\\Tests\\' => 18,
-            'Php\\Package\\' => 12,
             'PhpParser\\' => 10,
             'PHPStan\\ExtensionInstaller\\' => 27,
             'PHPStan\\' => 8,
@@ -71,6 +76,10 @@ class ComposerStaticInit9e8283bbf5f3d3dc34a300ae8e697997
         array (
             'Carbon\\Doctrine\\' => 16,
             'Carbon\\' => 7,
+        ),
+        'B' => 
+        array (
+            'BrainGames\\' => 11,
         ),
     );
 
@@ -151,10 +160,6 @@ class ComposerStaticInit9e8283bbf5f3d3dc34a300ae8e697997
         array (
             0 => __DIR__ . '/../..' . '/tests',
         ),
-        'Php\\Package\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
-        ),
         'PhpParser\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
@@ -188,6 +193,10 @@ class ComposerStaticInit9e8283bbf5f3d3dc34a300ae8e697997
         'Carbon\\' => 
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
+        ),
+        'BrainGames\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 
@@ -853,6 +862,7 @@ class ComposerStaticInit9e8283bbf5f3d3dc34a300ae8e697997
         'PHPUnit\\Runner\\ClassDoesNotExtendTestCaseException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Exception/ClassDoesNotExtendTestCaseException.php',
         'PHPUnit\\Runner\\ClassIsAbstractException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Exception/ClassIsAbstractException.php',
         'PHPUnit\\Runner\\CodeCoverage' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/CodeCoverage.php',
+        'PHPUnit\\Runner\\CodeCoverageFileExistsException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Exception/CodeCoverageFileExistsException.php',
         'PHPUnit\\Runner\\DeprecationCollector\\Collector' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/DeprecationCollector/Collector.php',
         'PHPUnit\\Runner\\DeprecationCollector\\Facade' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/DeprecationCollector/Facade.php',
         'PHPUnit\\Runner\\DeprecationCollector\\InIsolationCollector' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/DeprecationCollector/InIsolationCollector.php',

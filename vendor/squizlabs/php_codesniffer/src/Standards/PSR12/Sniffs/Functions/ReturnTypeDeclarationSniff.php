@@ -3,8 +3,7 @@
  * Ensure return types are defined correctly for functions and closures.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2019 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -29,7 +28,8 @@ class ReturnTypeDeclarationSniff implements Sniff
             T_CLOSURE,
             T_FN,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -41,7 +41,7 @@ class ReturnTypeDeclarationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -73,7 +73,7 @@ class ReturnTypeDeclarationSniff implements Sniff
                 if ($fix === true) {
                     $phpcsFile->fixer->replaceToken(($returnType - 1), ' ');
                 }
-            } elseif ($tokens[($returnType - 1)]['code'] === T_COLON) {
+            } else if ($tokens[($returnType - 1)]['code'] === T_COLON) {
                 $fix = $phpcsFile->addFixableError($error, $returnType, 'SpaceBeforeReturnType');
                 if ($fix === true) {
                     $phpcsFile->fixer->addContentBefore($returnType, ' ');
@@ -101,5 +101,8 @@ class ReturnTypeDeclarationSniff implements Sniff
                 $phpcsFile->addError($error, $colon, 'SpaceBeforeColon');
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

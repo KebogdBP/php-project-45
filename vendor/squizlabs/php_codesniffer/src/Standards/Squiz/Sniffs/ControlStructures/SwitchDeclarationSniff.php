@@ -3,8 +3,7 @@
  * Enforces switch statement formatting.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -16,6 +15,16 @@ use PHP_CodeSniffer\Util\Tokens;
 
 class SwitchDeclarationSniff implements Sniff
 {
+
+    /**
+     * A list of tokenizers this sniff supports.
+     *
+     * @var array
+     */
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+    ];
 
     /**
      * The number of spaces code should be indented.
@@ -33,7 +42,8 @@ class SwitchDeclarationSniff implements Sniff
     public function register()
     {
         return [T_SWITCH];
-    }
+
+    }//end register()
 
 
     /**
@@ -45,7 +55,7 @@ class SwitchDeclarationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -79,15 +89,31 @@ class SwitchDeclarationSniff implements Sniff
 
             if ($tokens[$nextCase]['content'] !== strtolower($tokens[$nextCase]['content'])) {
                 $expected = strtolower($tokens[$nextCase]['content']);
-                $error    = strtoupper($type) . ' keyword must be lowercase; expected "%s" but found "%s"';
+                $error    = strtoupper($type).' keyword must be lowercase; expected "%s" but found "%s"';
                 $data     = [
                     $expected,
                     $tokens[$nextCase]['content'],
                 ];
 
-                $fix = $phpcsFile->addFixableError($error, $nextCase, $type . 'NotLower', $data);
+                $fix = $phpcsFile->addFixableError($error, $nextCase, $type.'NotLower', $data);
                 if ($fix === true) {
                     $phpcsFile->fixer->replaceToken($nextCase, $expected);
+                }
+            }
+
+            if ($tokens[$nextCase]['column'] !== $caseAlignment) {
+                $error = strtoupper($type).' keyword must be indented '.$this->indent.' spaces from SWITCH keyword';
+                $fix   = $phpcsFile->addFixableError($error, $nextCase, $type.'Indent');
+
+                if ($fix === true) {
+                    $padding = str_repeat(' ', ($caseAlignment - 1));
+                    if ($tokens[$nextCase]['column'] === 1
+                        || $tokens[($nextCase - 1)]['code'] !== T_WHITESPACE
+                    ) {
+                        $phpcsFile->fixer->addContentBefore($nextCase, $padding);
+                    } else {
+                        $phpcsFile->fixer->replaceToken(($nextCase - 1), $padding);
+                    }
                 }
             }
 
@@ -106,57 +132,16 @@ class SwitchDeclarationSniff implements Sniff
                 }
             }
 
-            $beforeCase = $phpcsFile->findPrevious(T_WHITESPACE, ($nextCase - 1), null, true);
-            if ($tokens[$beforeCase]['line'] === $tokens[$nextCase]['line']) {
-                $error = '%s statement must be on a line by itself. Found content before';
-                $fix   = $phpcsFile->addFixableError($error, $nextCase, 'ContentBefore' . $type, [strtoupper($type)]);
-
-                if ($fix === true) {
-                    $padding = str_repeat(' ', ($caseAlignment - 1));
-                    if ($tokens[($beforeCase + 1)]['code'] === T_WHITESPACE) {
-                        $phpcsFile->fixer->replaceToken(($beforeCase + 1), $phpcsFile->eolChar . $padding);
-                    } else {
-                        $phpcsFile->fixer->addContent($beforeCase, $phpcsFile->eolChar . $padding);
-                    }
-                }
-            } elseif ($tokens[$nextCase]['column'] !== $caseAlignment) {
-                $error = strtoupper($type) . ' keyword must be indented ' . $this->indent . ' spaces from SWITCH keyword';
-                $fix   = $phpcsFile->addFixableError($error, $nextCase, $type . 'Indent');
-
-                if ($fix === true) {
-                    $padding = str_repeat(' ', ($caseAlignment - 1));
-                    if ($tokens[$nextCase]['column'] === 1
-                        || $tokens[($nextCase - 1)]['code'] !== T_WHITESPACE
-                    ) {
-                        $phpcsFile->fixer->addContentBefore($nextCase, $padding);
-                    } else {
-                        $phpcsFile->fixer->replaceToken(($nextCase - 1), $padding);
-                    }
-                }
-            }
-
             if (isset($tokens[$nextCase]['scope_opener']) === false) {
-                // Parse error or live coding.
+                $error = 'Possible parse error: CASE missing opening colon';
+                $phpcsFile->addWarning($error, $nextCase, 'MissingColon');
                 continue;
             }
 
             $opener = $tokens[$nextCase]['scope_opener'];
-
-            if ($tokens[$opener]['code'] === T_CLOSE_TAG) {
-                $error = 'There should be a colon before the PHP close tag to end the %s statement';
-                $code  = 'WrongOpener' . $type;
-                $data  = [strtoupper($type)];
-
-                $fix = $phpcsFile->addFixableError($error, $nextCase, $code, $data);
-                if ($fix === true) {
-                    $prevNonEmpty = $phpcsFile->findPrevious(T_WHITESPACE, ($opener - 1), null, true);
-                    $phpcsFile->fixer->addContent($prevNonEmpty, ':');
-                }
-            }
-
             if ($tokens[($opener - 1)]['type'] === 'T_WHITESPACE') {
-                $error = 'There must be no space before the colon in a ' . strtoupper($type) . ' statement';
-                $fix   = $phpcsFile->addFixableError($error, $nextCase, 'SpaceBeforeColon' . $type);
+                $error = 'There must be no space before the colon in a '.strtoupper($type).' statement';
+                $fix   = $phpcsFile->addFixableError($error, $nextCase, 'SpaceBeforeColon'.$type);
                 if ($fix === true) {
                     $phpcsFile->fixer->replaceToken(($opener - 1), '');
                 }
@@ -174,21 +159,8 @@ class SwitchDeclarationSniff implements Sniff
                     // Only need to check a couple of things once, even if the
                     // break is shared between multiple case statements, or even
                     // the default case.
-                    $beforeBreak = $phpcsFile->findPrevious(T_WHITESPACE, ($nextBreak - 1), null, true);
-                    if ($tokens[$beforeBreak]['line'] === $tokens[$nextBreak]['line']) {
-                        $error = 'Case breaking statement must be on a line by itself. Found content before';
-                        $fix   = $phpcsFile->addFixableError($error, $nextBreak, 'ContentBeforeBreak');
-
-                        if ($fix === true) {
-                            $padding = str_repeat(' ', ($caseAlignment - 1));
-                            if ($tokens[($beforeBreak + 1)]['code'] === T_WHITESPACE) {
-                                $phpcsFile->fixer->replaceToken(($beforeBreak + 1), $phpcsFile->eolChar . $padding);
-                            } else {
-                                $phpcsFile->fixer->addContent($beforeBreak, $phpcsFile->eolChar . $padding);
-                            }
-                        }
-                    } elseif ($tokens[$nextBreak]['column'] !== $caseAlignment) {
-                        $error = 'Case breaking statement must be indented ' . $this->indent . ' spaces from SWITCH keyword';
+                    if ($tokens[$nextBreak]['column'] !== $caseAlignment) {
+                        $error = 'Case breaking statement must be indented '.$this->indent.' spaces from SWITCH keyword';
                         $fix   = $phpcsFile->addFixableError($error, $nextBreak, 'BreakIndent');
 
                         if ($fix === true) {
@@ -203,27 +175,17 @@ class SwitchDeclarationSniff implements Sniff
                         }
                     }
 
-                    if (($tokens[$nextBreak]['line'] - $tokens[$beforeBreak]['line']) > 1) {
+                    $prev = $phpcsFile->findPrevious(T_WHITESPACE, ($nextBreak - 1), $stackPtr, true);
+                    if ($tokens[$prev]['line'] !== ($tokens[$nextBreak]['line'] - 1)) {
                         $error = 'Blank lines are not allowed before case breaking statements';
                         $phpcsFile->addError($error, $nextBreak, 'SpacingBeforeBreak');
                     }
 
-                    // Figure out the relevant "next" line.
-                    // Either the line containing the first non-empty content after the "break" statement
-                    // (which may be the current line), or a line containing a comment,
-                    // as long as it is not a trailing comment on the case statement line.
                     $nextLine  = $tokens[$tokens[$stackPtr]['scope_closer']]['line'];
                     $semicolon = $phpcsFile->findEndOfStatement($nextBreak);
-                    for ($nextRelevant = ($semicolon + 1); $nextRelevant < $tokens[$stackPtr]['scope_closer']; $nextRelevant++) {
-                        if (isset(Tokens::EMPTY_TOKENS[$tokens[$nextRelevant]['code']]) === false) {
-                            $nextLine = $tokens[$nextRelevant]['line'];
-                            break;
-                        }
-
-                        if ($tokens[$nextRelevant]['code'] !== T_WHITESPACE
-                            && $tokens[$nextBreak]['line'] !== $tokens[$nextRelevant]['line']
-                        ) {
-                            $nextLine = $tokens[$nextRelevant]['line'];
+                    for ($i = ($semicolon + 1); $i < $tokens[$stackPtr]['scope_closer']; $i++) {
+                        if ($tokens[$i]['type'] !== 'T_WHITESPACE') {
+                            $nextLine = $tokens[$i]['line'];
                             break;
                         }
                     }
@@ -231,91 +193,49 @@ class SwitchDeclarationSniff implements Sniff
                     if ($type === 'Case') {
                         // Ensure the BREAK statement is followed by
                         // a single blank line, or the end switch brace.
-                        if ($nextLine !== ($tokens[$semicolon]['line'] + 2)
-                            && $nextRelevant !== $tokens[$stackPtr]['scope_closer']
-                        ) {
+                        if ($nextLine !== ($tokens[$semicolon]['line'] + 2) && $i !== $tokens[$stackPtr]['scope_closer']) {
                             $error = 'Case breaking statements must be followed by a single blank line';
                             $fix   = $phpcsFile->addFixableError($error, $nextBreak, 'SpacingAfterBreak');
                             if ($fix === true) {
-                                $padding = str_repeat(' ', ($caseAlignment - 1));
-
                                 $phpcsFile->fixer->beginChangeset();
-                                if ($nextLine === $tokens[$semicolon]['line']) {
-                                    // Missing new line.
-                                    $replacement = $phpcsFile->eolChar . $phpcsFile->eolChar . $padding;
-                                    if ($tokens[($nextRelevant - 1)]['code'] === T_WHITESPACE) {
-                                        $phpcsFile->fixer->replaceToken(($nextRelevant - 1), $replacement);
-                                    } else {
-                                        $phpcsFile->fixer->addContentBefore($nextRelevant, $replacement);
+                                for ($i = ($semicolon + 1); $i <= $tokens[$stackPtr]['scope_closer']; $i++) {
+                                    if ($tokens[$i]['line'] === $nextLine) {
+                                        $phpcsFile->fixer->addNewlineBefore($i);
+                                        break;
                                     }
-                                } else {
-                                    // There is/are new line(s), just not the right number of them.
-                                    for ($i = ($semicolon + 1); $i < $nextRelevant; $i++) {
-                                        if ($tokens[$semicolon]['line'] === $tokens[$i]['line']) {
-                                            if ($tokens[$i]['line'] !== $tokens[($i + 1)]['line']) {
-                                                // Add extra new line at end of break line.
-                                                $phpcsFile->fixer->addNewline($i);
-                                            }
 
-                                            continue;
-                                        }
-
-                                        if ($tokens[$i]['line'] === $tokens[$nextRelevant]['line']) {
-                                            // Don't remove indentation on the line of the "next" content.
-                                            break;
-                                        }
-
-                                        // In all other cases, remove whitespace.
-                                        $phpcsFile->fixer->replaceToken($i, '');
+                                    if ($tokens[$i]['line'] === $tokens[$semicolon]['line']) {
+                                        continue;
                                     }
+
+                                    $phpcsFile->fixer->replaceToken($i, '');
                                 }
 
                                 $phpcsFile->fixer->endChangeset();
                             }
-                        }
+                        }//end if
                     } else {
                         // Ensure the BREAK statement is not followed by a blank line.
-                        if (($nextLine - $tokens[$semicolon]['line']) > 1) {
+                        if ($nextLine !== ($tokens[$semicolon]['line'] + 1)) {
                             $error = 'Blank lines are not allowed after the DEFAULT case\'s breaking statement';
                             $phpcsFile->addError($error, $nextBreak, 'SpacingAfterDefaultBreak');
                         }
-                    }
+                    }//end if
 
-                    // Figure out the relevant "next" line.
-                    // Either the line containing the first non-empty content (which may be the current line),
-                    // or a line containing a comment, as long as it is not a trailing comment on the case statement line.
                     $caseLine = $tokens[$nextCase]['line'];
                     $nextLine = $tokens[$nextBreak]['line'];
                     for ($i = ($opener + 1); $i < $nextBreak; $i++) {
-                        if (isset(Tokens::EMPTY_TOKENS[$tokens[$i]['code']]) === false) {
-                            $nextLine = $tokens[$i]['line'];
-                            break;
-                        }
-
-                        if ($tokens[$i]['code'] !== T_WHITESPACE
-                            && $tokens[$opener]['line'] !== $tokens[$i]['line']
-                        ) {
+                        if ($tokens[$i]['type'] !== 'T_WHITESPACE') {
                             $nextLine = $tokens[$i]['line'];
                             break;
                         }
                     }
 
-                    if ($nextLine === $caseLine) {
-                        $error = '%s statement must be on a line by itself. Found content after';
-                        $fix   = $phpcsFile->addFixableError($error, $opener, 'ContentAfter' . $type, [strtoupper($type)]);
-                        if ($fix === true) {
-                            $padding = str_repeat(' ', ($caseAlignment - 1 + $this->indent));
-                            if ($tokens[($i - 1)]['code'] === T_WHITESPACE) {
-                                $phpcsFile->fixer->replaceToken(($i - 1), $phpcsFile->eolChar . $padding);
-                            } else {
-                                $phpcsFile->fixer->addContentBefore($i, $phpcsFile->eolChar . $padding);
-                            }
-                        }
-                    } elseif (($nextLine - $caseLine) > 1) {
-                        $error = 'Blank lines are not allowed after ' . strtoupper($type) . ' statements';
-                        $phpcsFile->addError($error, $nextCase, 'SpacingAfter' . $type);
+                    if ($nextLine !== ($caseLine + 1)) {
+                        $error = 'Blank lines are not allowed after '.strtoupper($type).' statements';
+                        $phpcsFile->addError($error, $nextCase, 'SpacingAfter'.$type);
                     }
-                }
+                }//end if
 
                 if ($tokens[$nextBreak]['code'] === T_BREAK) {
                     if ($type === 'Case') {
@@ -330,7 +250,7 @@ class SwitchDeclarationSniff implements Sniff
                                 continue;
                             }
 
-                            if (isset(Tokens::EMPTY_TOKENS[$tokens[$i]['code']]) === false) {
+                            if (isset(Tokens::$emptyTokens[$tokens[$i]['code']]) === false) {
                                 $foundContent = true;
                                 break;
                             }
@@ -356,13 +276,13 @@ class SwitchDeclarationSniff implements Sniff
                             $error = 'Comment required for empty DEFAULT case';
                             $phpcsFile->addError($error, $nextCase, 'EmptyDefault');
                         }
-                    }
-                }
-            } elseif ($type === 'Default') {
+                    }//end if
+                }//end if
+            } else if ($type === 'Default') {
                 $error = 'DEFAULT case must have a breaking statement';
                 $phpcsFile->addError($error, $nextCase, 'DefaultNoBreak');
-            }
-        }
+            }//end if
+        }//end while
 
         if ($foundDefault === false) {
             $error = 'All SWITCH statements must contain a DEFAULT case';
@@ -378,5 +298,8 @@ class SwitchDeclarationSniff implements Sniff
             $error = 'SWITCH statements must contain at least one CASE statement';
             $phpcsFile->addError($error, $stackPtr, 'MissingCase');
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

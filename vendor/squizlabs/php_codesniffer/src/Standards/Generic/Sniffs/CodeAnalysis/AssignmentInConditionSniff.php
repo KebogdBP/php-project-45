@@ -8,7 +8,6 @@
  *
  * @author    Juliette Reinders Folmer <phpcs_nospam@adviesenzo.nl>
  * @copyright 2017 Juliette Reinders Folmer. All rights reserved.
- * @copyright 2023 PHPCSStandards and contributors
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -45,10 +44,10 @@ class AssignmentInConditionSniff implements Sniff
      */
     public function register()
     {
-        $this->assignmentTokens = Tokens::ASSIGNMENT_TOKENS;
+        $this->assignmentTokens = Tokens::$assignmentTokens;
         unset($this->assignmentTokens[T_DOUBLE_ARROW]);
 
-        $starters = Tokens::BOOLEAN_OPERATORS;
+        $starters = Tokens::$booleanOperators;
         $starters[T_SEMICOLON]        = T_SEMICOLON;
         $starters[T_OPEN_PARENTHESIS] = T_OPEN_PARENTHESIS;
 
@@ -63,7 +62,8 @@ class AssignmentInConditionSniff implements Sniff
             T_WHILE,
             T_MATCH,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -75,7 +75,7 @@ class AssignmentInConditionSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
         $token  = $tokens[$stackPtr];
@@ -100,7 +100,7 @@ class AssignmentInConditionSniff implements Sniff
 
             $closer = $semicolon;
             unset($semicolon);
-        } elseif ($token['code'] === T_CASE) {
+        } else if ($token['code'] === T_CASE) {
             if (isset($token['scope_opener']) === false) {
                 return;
             }
@@ -114,7 +114,7 @@ class AssignmentInConditionSniff implements Sniff
 
             $opener = $token['parenthesis_opener'];
             $closer = $token['parenthesis_closer'];
-        }
+        }//end if
 
         $startPos = $opener;
 
@@ -133,7 +133,7 @@ class AssignmentInConditionSniff implements Sniff
             }
 
             for ($i = $hasAssignment; $i > $conditionStart; $i--) {
-                if (isset(Tokens::EMPTY_TOKENS[$tokens[$i]['code']]) === true) {
+                if (isset(Tokens::$emptyTokens[$tokens[$i]['code']]) === true) {
                     continue;
                 }
 
@@ -164,5 +164,8 @@ class AssignmentInConditionSniff implements Sniff
 
             $startPos = $hasAssignment;
         } while ($startPos < $closer);
-    }
-}
+
+    }//end process()
+
+
+}//end class

@@ -4,8 +4,7 @@
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
  * @author    Sam Graham <php-codesniffer@illusori.co.uk>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -18,6 +17,16 @@ use PHP_CodeSniffer\Util\Tokens;
 class FixmeSniff implements Sniff
 {
 
+    /**
+     * A list of tokenizers this sniff supports.
+     *
+     * @var array
+     */
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+    ];
+
 
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -26,8 +35,9 @@ class FixmeSniff implements Sniff
      */
     public function register()
     {
-        return array_diff(Tokens::COMMENT_TOKENS, Tokens::PHPCS_ANNOTATION_TOKENS);
-    }
+        return array_diff(Tokens::$commentTokens, Tokens::$phpcsCommentTokens);
+
+    }//end register()
 
 
     /**
@@ -39,7 +49,7 @@ class FixmeSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -61,5 +71,8 @@ class FixmeSniff implements Sniff
 
             $phpcsFile->addError($error, $stackPtr, $type, $data);
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

@@ -23,7 +23,7 @@
  *
  * @author    Tim Duesterhus <duesterhus@woltlab.com>
  * @copyright 2021-2023 WoltLab GmbH.
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2024 PHPCSStandards and contributors
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -53,12 +53,13 @@ class RequireExplicitBooleanOperatorPrecedenceSniff implements Sniff
      */
     public function register()
     {
-        $this->searchTargets = Tokens::BOOLEAN_OPERATORS;
+        $this->searchTargets = Tokens::$booleanOperators;
         $this->searchTargets[T_INLINE_THEN] = T_INLINE_THEN;
         $this->searchTargets[T_INLINE_ELSE] = T_INLINE_ELSE;
 
-        return Tokens::BOOLEAN_OPERATORS;
-    }
+        return Tokens::$booleanOperators;
+
+    }//end register()
 
 
     /**
@@ -70,7 +71,7 @@ class RequireExplicitBooleanOperatorPrecedenceSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -104,5 +105,8 @@ class RequireExplicitBooleanOperatorPrecedenceSniff implements Sniff
         $error  = 'Mixing different binary boolean operators within an expression';
         $error .= ' without using parentheses to clarify precedence is not allowed.';
         $phpcsFile->addError($error, $stackPtr, 'MissingParentheses');
-    }
-}
+
+    }//end process()
+
+
+}//end class

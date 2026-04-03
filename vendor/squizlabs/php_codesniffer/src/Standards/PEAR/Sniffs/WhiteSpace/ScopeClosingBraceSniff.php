@@ -3,8 +3,7 @@
  * Checks that the closing braces of scopes are aligned correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -32,8 +31,9 @@ class ScopeClosingBraceSniff implements Sniff
      */
     public function register()
     {
-        return Tokens::SCOPE_OPENERS;
-    }
+        return Tokens::$scopeOpeners;
+
+    }//end register()
 
 
     /**
@@ -45,7 +45,7 @@ class ScopeClosingBraceSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -83,7 +83,7 @@ class ScopeClosingBraceSniff implements Sniff
         $startColumn = 1;
         if ($tokens[$lineStart]['code'] === T_WHITESPACE) {
             $startColumn = $tokens[($lineStart + 1)]['column'];
-        } elseif ($tokens[$lineStart]['code'] === T_INLINE_HTML) {
+        } else if ($tokens[$lineStart]['code'] === T_INLINE_HTML) {
             $trimmed = ltrim($tokens[$lineStart]['content']);
             if ($trimmed === '') {
                 $startColumn = $tokens[($lineStart + 1)]['column'];
@@ -130,7 +130,7 @@ class ScopeClosingBraceSniff implements Sniff
         $braceIndent = 0;
         if ($tokens[$lineStart]['code'] === T_WHITESPACE) {
             $braceIndent = ($tokens[($lineStart + 1)]['column'] - 1);
-        } elseif ($tokens[$lineStart]['code'] === T_INLINE_HTML) {
+        } else if ($tokens[$lineStart]['code'] === T_INLINE_HTML) {
             $trimmed = ltrim($tokens[$lineStart]['content']);
             if ($trimmed === '') {
                 $braceIndent = ($tokens[($lineStart + 1)]['column'] - 1);
@@ -164,7 +164,7 @@ class ScopeClosingBraceSniff implements Sniff
                 ];
                 $fix   = $phpcsFile->addFixableError($error, $scopeEnd, 'Indent', $data);
             }
-        }
+        }//end if
 
         if ($fix === true) {
             $spaces = str_repeat(' ', $expectedIndent);
@@ -175,5 +175,8 @@ class ScopeClosingBraceSniff implements Sniff
                 $phpcsFile->fixer->addContentBefore($lineStart, $spaces);
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

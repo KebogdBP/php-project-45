@@ -18,7 +18,6 @@
  * @author    Manuel Pichler <mapi@manuel-pichler.de>
  * @author    Greg Sherwood <gsherwood@squiz.net>
  * @copyright 2007-2014 Manuel Pichler. All rights reserved.
- * @copyright 2023 PHPCSStandards and contributors
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -53,7 +52,8 @@ class EmptyStatementSniff implements Sniff
             T_WHILE,
             T_MATCH,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -65,7 +65,7 @@ class EmptyStatementSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
         $token  = $tokens[$stackPtr];
@@ -76,7 +76,7 @@ class EmptyStatementSniff implements Sniff
         }
 
         $next = $phpcsFile->findNext(
-            Tokens::EMPTY_TOKENS,
+            Tokens::$emptyTokens,
             ($token['scope_opener'] + 1),
             ($token['scope_closer'] - 1),
             true
@@ -89,6 +89,9 @@ class EmptyStatementSniff implements Sniff
         // Get token identifier.
         $name  = strtoupper($token['content']);
         $error = 'Empty %s statement detected';
-        $phpcsFile->addError($error, $stackPtr, 'Detected' . ucfirst(strtolower($name)), [$name]);
-    }
-}
+        $phpcsFile->addError($error, $stackPtr, 'Detected'.ucfirst(strtolower($name)), [$name]);
+
+    }//end process()
+
+
+}//end class

@@ -17,7 +17,6 @@
  *
  * @author    Manuel Pichler <mapi@manuel-pichler.de>
  * @copyright 2007-2014 Manuel Pichler. All rights reserved.
- * @copyright 2023 PHPCSStandards and contributors
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -38,7 +37,8 @@ class UnnecessaryFinalModifierSniff implements Sniff
     public function register()
     {
         return [T_CLASS];
-    }
+
+    }//end register()
 
 
     /**
@@ -50,7 +50,7 @@ class UnnecessaryFinalModifierSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
         $token  = $tokens[$stackPtr];
@@ -81,5 +81,8 @@ class UnnecessaryFinalModifierSniff implements Sniff
                 $next = $tokens[$next]['scope_closer'];
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

@@ -3,8 +3,7 @@
  * Checks to ensure that there are no comments after statements.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -17,14 +16,24 @@ class PostStatementCommentSniff implements Sniff
 {
 
     /**
+     * A list of tokenizers this sniff supports.
+     *
+     * @var array
+     */
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+    ];
+
+    /**
      * Exceptions to the rule.
      *
      * If post statement comments are found within the condition
      * parenthesis of these structures, leave them alone.
      *
-     * @var array<int|string, true>
+     * @var array
      */
-    private const CONTROL_STRUCTURE_EXCEPTIONS = [
+    private $controlStructureExceptions = [
         T_IF      => true,
         T_ELSEIF  => true,
         T_SWITCH  => true,
@@ -43,7 +52,8 @@ class PostStatementCommentSniff implements Sniff
     public function register()
     {
         return [T_COMMENT];
-    }
+
+    }//end register()
 
 
     /**
@@ -55,7 +65,7 @@ class PostStatementCommentSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -77,7 +87,7 @@ class PostStatementCommentSniff implements Sniff
             return;
         }
 
-        // Special case for closures.
+        // Special case for JS files and PHP closures.
         if ($tokens[$lastContent]['code'] === T_COMMA
             || $tokens[$lastContent]['code'] === T_SEMICOLON
         ) {
@@ -92,14 +102,16 @@ class PostStatementCommentSniff implements Sniff
             $nestedParens = $tokens[$stackPtr]['nested_parenthesis'];
             foreach ($nestedParens as $open => $close) {
                 if (isset($tokens[$open]['parenthesis_owner']) === true
-                    && isset(self::CONTROL_STRUCTURE_EXCEPTIONS[$tokens[$tokens[$open]['parenthesis_owner']]['code']]) === true
+                    && isset($this->controlStructureExceptions[$tokens[$tokens[$open]['parenthesis_owner']]['code']]) === true
                 ) {
                     return;
                 }
             }
         }
 
-        if (preg_match('|^//[ \t]*@[^\s]+|', $tokens[$stackPtr]['content']) === 1) {
+        if ($phpcsFile->tokenizerType === 'PHP'
+            && preg_match('|^//[ \t]*@[^\s]+|', $tokens[$stackPtr]['content']) === 1
+        ) {
             $error = 'Annotations may not appear after statements';
             $phpcsFile->addError($error, $stackPtr, 'AnnotationFound');
             return;
@@ -110,5 +122,8 @@ class PostStatementCommentSniff implements Sniff
         if ($fix === true) {
             $phpcsFile->fixer->addNewlineBefore($stackPtr);
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

@@ -3,30 +3,19 @@
  * Parses and verifies the variable doc comment.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\Commenting;
 
 use PHP_CodeSniffer\Files\File;
-use PHP_CodeSniffer\Sniffs\AbstractScopeSniff;
 use PHP_CodeSniffer\Sniffs\AbstractVariableSniff;
 use PHP_CodeSniffer\Util\Common;
 use PHP_CodeSniffer\Util\Tokens;
 
 class VariableCommentSniff extends AbstractVariableSniff
 {
-
-
-    /**
-     * Only listen to variables within OO scopes.
-     */
-    public function __construct()
-    {
-        AbstractScopeSniff::__construct(Tokens::OO_SCOPE_TOKENS, [T_VARIABLE], false);
-    }
 
 
     /**
@@ -38,12 +27,10 @@ class VariableCommentSniff extends AbstractVariableSniff
      *
      * @return void
      */
-    public function processMemberVar(File $phpcsFile, int $stackPtr)
+    public function processMemberVar(File $phpcsFile, $stackPtr)
     {
-        $tokens = $phpcsFile->getTokens();
-
-        $ignore  = Tokens::SCOPE_MODIFIERS;
-        $ignore += Tokens::NAME_TOKENS;
+        $tokens  = $phpcsFile->getTokens();
+        $ignore  = Tokens::$scopeModifiers;
         $ignore += [
             T_VAR                    => T_VAR,
             T_STATIC                 => T_STATIC,
@@ -51,6 +38,9 @@ class VariableCommentSniff extends AbstractVariableSniff
             T_FINAL                  => T_FINAL,
             T_ABSTRACT               => T_ABSTRACT,
             T_WHITESPACE             => T_WHITESPACE,
+            T_STRING                 => T_STRING,
+            T_NS_SEPARATOR           => T_NS_SEPARATOR,
+            T_NAMESPACE              => T_NAMESPACE,
             T_NULLABLE               => T_NULLABLE,
             T_TYPE_UNION             => T_TYPE_UNION,
             T_TYPE_INTERSECTION      => T_TYPE_INTERSECTION,
@@ -101,7 +91,7 @@ class VariableCommentSniff extends AbstractVariableSniff
                 } else {
                     $foundVar = $tag;
                 }
-            } elseif ($tokens[$tag]['content'] === '@see') {
+            } else if ($tokens[$tag]['content'] === '@see') {
                 // Make sure the tag isn't empty.
                 $string = $phpcsFile->findNext(T_DOC_COMMENT_STRING, $tag, $commentEnd);
                 if ($string === false || $tokens[$string]['line'] !== $tokens[$tag]['line']) {
@@ -111,10 +101,9 @@ class VariableCommentSniff extends AbstractVariableSniff
             } else {
                 $error = '%s tag is not allowed in member variable comment';
                 $data  = [$tokens[$tag]['content']];
-                $code  = ucwords(ltrim($tokens[$tag]['content'], '@')) . 'TagNotAllowed';
-                $phpcsFile->addWarning($error, $tag, $code, $data);
-            }
-        }
+                $phpcsFile->addWarning($error, $tag, 'TagNotAllowed', $data);
+            }//end if
+        }//end foreach
 
         // The @var tag is the only one we require.
         if ($foundVar === null) {
@@ -173,7 +162,8 @@ class VariableCommentSniff extends AbstractVariableSniff
                 unset($replacement);
             }
         }
-    }
+
+    }//end processMemberVar()
 
 
     /**
@@ -187,9 +177,10 @@ class VariableCommentSniff extends AbstractVariableSniff
      *
      * @return void
      */
-    protected function processVariable(File $phpcsFile, int $stackPtr)
+    protected function processVariable(File $phpcsFile, $stackPtr)
     {
-    }
+
+    }//end processVariable()
 
 
     /**
@@ -203,7 +194,10 @@ class VariableCommentSniff extends AbstractVariableSniff
      *
      * @return void
      */
-    protected function processVariableInString(File $phpcsFile, int $stackPtr)
+    protected function processVariableInString(File $phpcsFile, $stackPtr)
     {
-    }
-}
+
+    }//end processVariableInString()
+
+
+}//end class

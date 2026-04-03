@@ -3,15 +3,13 @@
  * Verifies that class members are spaced correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace;
 
 use PHP_CodeSniffer\Files\File;
-use PHP_CodeSniffer\Sniffs\AbstractScopeSniff;
 use PHP_CodeSniffer\Sniffs\AbstractVariableSniff;
 use PHP_CodeSniffer\Util\Tokens;
 
@@ -34,15 +32,6 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
 
 
     /**
-     * Only listen to variables within OO scopes.
-     */
-    public function __construct()
-    {
-        AbstractScopeSniff::__construct(Tokens::OO_SCOPE_TOKENS, [T_VARIABLE], false);
-    }
-
-
-    /**
      * Processes the function tokens within the class.
      *
      * @param \PHP_CodeSniffer\Files\File $phpcsFile The file where this token was found.
@@ -52,7 +41,7 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
      *                  called again on the current file until the returned stack
      *                  pointer is reached.
      */
-    protected function processMemberVar(File $phpcsFile, int $stackPtr)
+    protected function processMemberVar(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -64,7 +53,7 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
 
         $endOfPreviousStatement = $phpcsFile->findPrevious($stopPoints, ($stackPtr - 1), null, false, null, true);
 
-        $validPrefixes   = Tokens::SCOPE_MODIFIERS;
+        $validPrefixes   = Tokens::$scopeModifiers;
         $validPrefixes[] = T_STATIC;
         $validPrefixes[] = T_FINAL;
         $validPrefixes[] = T_VAR;
@@ -98,9 +87,9 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
 
         if ($tokens[$prev]['code'] === T_DOC_COMMENT_CLOSE_TAG) {
             $start = $prev;
-        } elseif (isset(Tokens::COMMENT_TOKENS[$tokens[$prev]['code']]) === true) {
+        } else if (isset(Tokens::$commentTokens[$tokens[$prev]['code']]) === true) {
             // Assume the comment belongs to the member var if it is on a line by itself.
-            $prevContent = $phpcsFile->findPrevious(Tokens::EMPTY_TOKENS, ($prev - 1), null, true);
+            $prevContent = $phpcsFile->findPrevious(Tokens::$emptyTokens, ($prev - 1), null, true);
             if ($tokens[$prevContent]['line'] !== $tokens[$prev]['line']) {
                 $start = $prev;
             }
@@ -117,7 +106,7 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
                 || $tokens[$i]['code'] !== T_WHITESPACE
                 || $tokens[$i]['line'] === $tokens[($i + 1)]['line']
                 // Do not report blank lines after a PHPCS annotation as removing the blank lines could change the meaning.
-                || isset(Tokens::PHPCS_ANNOTATION_TOKENS[$tokens[($i - 1)]['code']]) === true
+                || isset(Tokens::$phpcsCommentTokens[$tokens[($i - 1)]['code']]) === true
             ) {
                 continue;
             }
@@ -145,20 +134,20 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
             }
 
             $i = $nextNonWhitespace;
-        }
+        }//end for
 
         // There needs to be n blank lines before the var, not counting comments.
         if ($start === $startOfStatement) {
             // No comment found.
-            $first = $phpcsFile->findFirstOnLine(Tokens::EMPTY_TOKENS, $start, true);
+            $first = $phpcsFile->findFirstOnLine(Tokens::$emptyTokens, $start, true);
             if ($first === false) {
                 $first = $start;
             }
-        } elseif ($tokens[$start]['code'] === T_DOC_COMMENT_CLOSE_TAG) {
+        } else if ($tokens[$start]['code'] === T_DOC_COMMENT_CLOSE_TAG) {
             $first = $tokens[$start]['comment_opener'];
         } else {
-            $first = $phpcsFile->findPrevious(Tokens::EMPTY_TOKENS, ($start - 1), null, true);
-            $first = $phpcsFile->findNext(array_merge(Tokens::COMMENT_TOKENS, [T_ATTRIBUTE]), ($first + 1));
+            $first = $phpcsFile->findPrevious(Tokens::$emptyTokens, ($start - 1), null, true);
+            $first = $phpcsFile->findNext(array_merge(Tokens::$commentTokens, [T_ATTRIBUTE]), ($first + 1));
         }
 
         // Determine if this is the first member var.
@@ -171,7 +160,7 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
         }
 
         if ($tokens[$prev]['code'] === T_OPEN_CURLY_BRACKET
-            && isset(Tokens::OO_SCOPE_TOKENS[$tokens[$tokens[$prev]['scope_condition']]['code']]) === true
+            && isset(Tokens::$ooScopeTokens[$tokens[$tokens[$prev]['scope_condition']]['code']]) === true
         ) {
             $errorMsg  = 'Expected %s blank line(s) before first member var; %s found';
             $errorCode = 'FirstIncorrect';
@@ -223,12 +212,13 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
             }
 
             $phpcsFile->fixer->endChangeset();
-        }
+        }//end if
 
         if ($endOfStatement !== false) {
             return $endOfStatement;
         }
-    }
+
+    }//end processMemberVar()
 
 
     /**
@@ -239,10 +229,13 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
      *
      * @return void
      */
-    protected function processVariable(File $phpcsFile, int $stackPtr)
+    protected function processVariable(File $phpcsFile, $stackPtr)
     {
-        // We don't care about normal variables.
-    }
+        /*
+            We don't care about normal variables.
+        */
+
+    }//end processVariable()
 
 
     /**
@@ -253,8 +246,13 @@ class MemberVarSpacingSniff extends AbstractVariableSniff
      *
      * @return void
      */
-    protected function processVariableInString(File $phpcsFile, int $stackPtr)
+    protected function processVariableInString(File $phpcsFile, $stackPtr)
     {
-        // We don't care about normal variables.
-    }
-}
+        /*
+            We don't care about normal variables.
+        */
+
+    }//end processVariableInString()
+
+
+}//end class

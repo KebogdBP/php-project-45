@@ -3,8 +3,7 @@
  * Ensures the use of else if over elseif.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -25,7 +24,8 @@ class ElseIfDeclarationSniff implements Sniff
     public function register()
     {
         return [T_ELSEIF];
-    }
+
+    }//end register()
 
 
     /**
@@ -37,12 +37,15 @@ class ElseIfDeclarationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $error = 'Usage of ELSEIF not allowed; use ELSE IF instead';
         $fix   = $phpcsFile->addFixableError($error, $stackPtr, 'NotAllowed');
         if ($fix === true) {
             $phpcsFile->fixer->replaceToken($stackPtr, 'else if');
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

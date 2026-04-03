@@ -3,8 +3,7 @@
  * Checks that the closing braces of scopes are aligned correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -25,8 +24,9 @@ class ScopeClosingBraceSniff implements Sniff
      */
     public function register()
     {
-        return Tokens::SCOPE_OPENERS;
-    }
+        return Tokens::$scopeOpeners;
+
+    }//end register()
 
 
     /**
@@ -38,7 +38,7 @@ class ScopeClosingBraceSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -106,6 +106,9 @@ class ScopeClosingBraceSniff implements Sniff
                     $phpcsFile->fixer->substrToken(($lineStart - 1), 0, $diff);
                 }
             }
-        }
-    }
-}
+        }//end if
+
+    }//end process()
+
+
+}//end class

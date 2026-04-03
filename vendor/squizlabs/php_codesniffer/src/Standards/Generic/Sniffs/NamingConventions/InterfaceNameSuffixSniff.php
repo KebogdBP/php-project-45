@@ -23,7 +23,8 @@ class InterfaceNameSuffixSniff implements Sniff
     public function register()
     {
         return [T_INTERFACE];
-    }
+
+    }//end register()
 
 
     /**
@@ -35,10 +36,10 @@ class InterfaceNameSuffixSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $interfaceName = $phpcsFile->getDeclarationName($stackPtr);
-        if ($interfaceName === '') {
+        if ($interfaceName === null) {
             // Live coding or parse error. Bow out.
             return;
         }
@@ -47,5 +48,8 @@ class InterfaceNameSuffixSniff implements Sniff
         if (strtolower($suffix) !== 'interface') {
             $phpcsFile->addError('Interface names must be suffixed with "Interface"; found "%s"', $stackPtr, 'Missing', [$interfaceName]);
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

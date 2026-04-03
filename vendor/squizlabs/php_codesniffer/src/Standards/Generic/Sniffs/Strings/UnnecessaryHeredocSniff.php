@@ -20,7 +20,7 @@ class UnnecessaryHeredocSniff implements Sniff
      *
      * @var array<string>
      */
-    private const ESCAPE_CHARS = [
+    private $escapeChars = [
         // Octal sequences.
         '\0',
         '\1',
@@ -53,7 +53,8 @@ class UnnecessaryHeredocSniff implements Sniff
     public function register()
     {
         return [T_START_HEREDOC];
-    }
+
+    }//end register()
 
 
     /**
@@ -65,7 +66,7 @@ class UnnecessaryHeredocSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -105,12 +106,12 @@ class UnnecessaryHeredocSniff implements Sniff
                 $phpcsFile->recordMetric($stackPtr, 'Heredoc contains interpolation or expression', 'yes');
                 return;
             }
-        }
+        }//end foreach
 
         $phpcsFile->recordMetric($stackPtr, 'Heredoc contains interpolation or expression', 'no');
 
         // Check for escape sequences which aren't supported in nowdocs.
-        foreach (self::ESCAPE_CHARS as $testChar) {
+        foreach ($this->escapeChars as $testChar) {
             if (strpos($body, $testChar) !== false) {
                 return;
             }
@@ -123,7 +124,7 @@ class UnnecessaryHeredocSniff implements Sniff
             $phpcsFile->fixer->beginChangeset();
 
             $identifier  = trim(ltrim($tokens[$stackPtr]['content'], '<'));
-            $replaceWith = "'" . trim($identifier, '"') . "'";
+            $replaceWith = "'".trim($identifier, '"')."'";
             $replacement = str_replace($identifier, $replaceWith, $tokens[$stackPtr]['content']);
             $phpcsFile->fixer->replaceToken($stackPtr, $replacement);
 
@@ -137,5 +138,8 @@ class UnnecessaryHeredocSniff implements Sniff
 
             $phpcsFile->fixer->endChangeset();
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

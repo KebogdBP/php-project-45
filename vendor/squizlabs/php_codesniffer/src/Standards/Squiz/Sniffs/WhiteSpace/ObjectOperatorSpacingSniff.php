@@ -3,8 +3,7 @@
  * Ensure there is no whitespace before/after an object operator.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -36,7 +35,8 @@ class ObjectOperatorSpacingSniff implements Sniff
             T_DOUBLE_COLON,
             T_NULLSAFE_OBJECT_OPERATOR,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -48,7 +48,7 @@ class ObjectOperatorSpacingSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
         if ($tokens[($stackPtr - 1)]['code'] !== T_WHITESPACE) {
@@ -82,7 +82,8 @@ class ObjectOperatorSpacingSniff implements Sniff
 
         $phpcsFile->recordMetric($stackPtr, 'Spacing after object operator', $after);
         $this->checkSpacingAfterOperator($phpcsFile, $stackPtr, $after);
-    }
+
+    }//end process()
 
 
     /**
@@ -96,7 +97,7 @@ class ObjectOperatorSpacingSniff implements Sniff
      *
      * @return boolean true if there was no error, false otherwise.
      */
-    protected function checkSpacingBeforeOperator(File $phpcsFile, int $stackPtr, $before)
+    protected function checkSpacingBeforeOperator(File $phpcsFile, $stackPtr, $before)
     {
         if ($before !== 0
             && ($before !== 'newline' || $this->ignoreNewlines === false)
@@ -120,7 +121,8 @@ class ObjectOperatorSpacingSniff implements Sniff
         }
 
         return true;
-    }
+
+    }//end checkSpacingBeforeOperator()
 
 
     /**
@@ -134,7 +136,7 @@ class ObjectOperatorSpacingSniff implements Sniff
      *
      * @return boolean true if there was no error, false otherwise.
      */
-    protected function checkSpacingAfterOperator(File $phpcsFile, int $stackPtr, $after)
+    protected function checkSpacingAfterOperator(File $phpcsFile, $stackPtr, $after)
     {
         if ($after !== 0
             && ($after !== 'newline' || $this->ignoreNewlines === false)
@@ -158,5 +160,8 @@ class ObjectOperatorSpacingSniff implements Sniff
         }
 
         return true;
-    }
-}
+
+    }//end checkSpacingAfterOperator()
+
+
+}//end class

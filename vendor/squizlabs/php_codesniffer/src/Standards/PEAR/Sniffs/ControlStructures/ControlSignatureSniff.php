@@ -3,8 +3,7 @@
  * Verifies that control statements conform to their coding standards.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -42,5 +41,8 @@ class ControlSignatureSniff extends AbstractPatternSniff
             'do {EOL',
             'match (...) {EOL',
         ];
-    }
-}
+
+    }//end getPatterns()
+
+
+}//end class

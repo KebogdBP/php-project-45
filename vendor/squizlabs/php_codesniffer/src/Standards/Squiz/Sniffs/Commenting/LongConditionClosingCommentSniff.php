@@ -3,8 +3,7 @@
  * Ensures long conditions have a comment at the end.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -17,19 +16,29 @@ class LongConditionClosingCommentSniff implements Sniff
 {
 
     /**
-     * The condition openers that we are interested in.
+     * A list of tokenizers this sniff supports.
      *
-     * @var array<int|string, int|string>
+     * @var array
      */
-    private const CONDITION_OPENERS = [
-        T_SWITCH  => T_SWITCH,
-        T_IF      => T_IF,
-        T_FOR     => T_FOR,
-        T_FOREACH => T_FOREACH,
-        T_WHILE   => T_WHILE,
-        T_TRY     => T_TRY,
-        T_CASE    => T_CASE,
-        T_MATCH   => T_MATCH,
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+    ];
+
+    /**
+     * The openers that we are interested in.
+     *
+     * @var array<int|string>
+     */
+    private static $openers = [
+        T_SWITCH,
+        T_IF,
+        T_FOR,
+        T_FOREACH,
+        T_WHILE,
+        T_TRY,
+        T_CASE,
+        T_MATCH,
     ];
 
     /**
@@ -58,7 +67,8 @@ class LongConditionClosingCommentSniff implements Sniff
     public function register()
     {
         return [T_CLOSE_CURLY_BRACKET];
-    }
+
+    }//end register()
 
 
     /**
@@ -70,7 +80,7 @@ class LongConditionClosingCommentSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -84,7 +94,7 @@ class LongConditionClosingCommentSniff implements Sniff
         $endBrace       = $tokens[$stackPtr];
 
         // We are only interested in some code blocks.
-        if (isset(self::CONDITION_OPENERS[$startCondition['code']]) === false) {
+        if (in_array($startCondition['code'], self::$openers, true) === false) {
             return;
         }
 
@@ -125,9 +135,9 @@ class LongConditionClosingCommentSniff implements Sniff
                     $endBrace = $tokens[$stackPtr];
                 } else {
                     break;
-                }
+                }//end if
             } while (isset($tokens[$nextToken]['scope_closer']) === true);
-        }
+        }//end if
 
         if ($startCondition['code'] === T_TRY) {
             // TRY statements need to check until the end of all CATCH statements.
@@ -196,10 +206,13 @@ class LongConditionClosingCommentSniff implements Sniff
 
             $fix = $phpcsFile->addFixableError($error, $stackPtr, 'Invalid', $data);
             if ($fix === true) {
-                $phpcsFile->fixer->replaceToken($comment, $expected . $phpcsFile->eolChar);
+                $phpcsFile->fixer->replaceToken($comment, $expected.$phpcsFile->eolChar);
             }
 
             return;
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

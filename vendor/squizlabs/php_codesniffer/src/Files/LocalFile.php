@@ -3,8 +3,7 @@
  * A local file represents a chunk of text has a file system location.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -14,7 +13,6 @@ use PHP_CodeSniffer\Config;
 use PHP_CodeSniffer\Ruleset;
 use PHP_CodeSniffer\Util\Cache;
 use PHP_CodeSniffer\Util\Common;
-use PHP_CodeSniffer\Util\Writers\StatusWriter;
 
 class LocalFile extends File
 {
@@ -29,7 +27,7 @@ class LocalFile extends File
      *
      * @return void
      */
-    public function __construct(string $path, Ruleset $ruleset, Config $config)
+    public function __construct($path, Ruleset $ruleset, Config $config)
     {
         $this->path = trim($path);
         if (Common::isReadable($this->path) === false) {
@@ -50,7 +48,9 @@ class LocalFile extends File
                 $firstContent .= fgets($handle);
                 fclose($handle);
 
-                if (stripos($firstContent, 'phpcs:ignorefile') !== false) {
+                if (strpos($firstContent, '@codingStandardsIgnoreFile') !== false
+                    || stripos($firstContent, 'phpcs:ignorefile') !== false
+                ) {
                     // We are ignoring the whole file.
                     $this->ignored = true;
                     return;
@@ -61,7 +61,8 @@ class LocalFile extends File
         $this->reloadContent();
 
         parent::__construct($this->path, $ruleset, $config);
-    }
+
+    }//end __construct()
 
 
     /**
@@ -72,7 +73,8 @@ class LocalFile extends File
     public function reloadContent()
     {
         $this->setContent(file_get_contents($this->path));
-    }
+
+    }//end reloadContent()
 
 
     /**
@@ -105,39 +107,37 @@ class LocalFile extends File
                 $this->replayErrors($cache['errors'], $cache['warnings']);
                 $this->configCache['cache'] = true;
             } else {
-                $this->errorCount          = $cache['errorCount'];
-                $this->warningCount        = $cache['warningCount'];
-                $this->fixableErrorCount   = $cache['fixableErrorCount'];
-                $this->fixableWarningCount = $cache['fixableWarningCount'];
+                $this->errorCount   = $cache['errorCount'];
+                $this->warningCount = $cache['warningCount'];
+                $this->fixableCount = $cache['fixableCount'];
             }
 
             if (PHP_CODESNIFFER_VERBOSITY > 0
                 || (PHP_CODESNIFFER_CBF === true && empty($this->config->files) === false)
             ) {
-                StatusWriter::write('[loaded from cache]... ', 0, 0);
+                echo "[loaded from cache]... ";
             }
 
             $this->numTokens = $cache['numTokens'];
             $this->fromCache = true;
             return;
-        }
+        }//end if
 
         if (PHP_CODESNIFFER_VERBOSITY > 1) {
-            StatusWriter::writeNewline();
+            echo PHP_EOL;
         }
 
         parent::process();
 
         $cache = [
-            'hash'                => $hash,
-            'errors'              => $this->errors,
-            'warnings'            => $this->warnings,
-            'metrics'             => $this->metrics,
-            'errorCount'          => $this->errorCount,
-            'warningCount'        => $this->warningCount,
-            'fixableErrorCount'   => $this->fixableErrorCount,
-            'fixableWarningCount' => $this->fixableWarningCount,
-            'numTokens'           => $this->numTokens,
+            'hash'         => $hash,
+            'errors'       => $this->errors,
+            'warnings'     => $this->warnings,
+            'metrics'      => $this->metrics,
+            'errorCount'   => $this->errorCount,
+            'warningCount' => $this->warningCount,
+            'fixableCount' => $this->fixableCount,
+            'numTokens'    => $this->numTokens,
         ];
 
         Cache::set($this->path, $cache);
@@ -149,7 +149,8 @@ class LocalFile extends File
             $this->replayErrors($this->errors, $this->warnings);
             $this->configCache['cache'] = true;
         }
-    }
+
+    }//end process()
 
 
     /**
@@ -164,14 +165,13 @@ class LocalFile extends File
      *
      * @return void
      */
-    private function replayErrors(array $errors, array $warnings)
+    private function replayErrors($errors, $warnings)
     {
-        $this->errors            = [];
-        $this->warnings          = [];
-        $this->errorCount        = 0;
-        $this->warningCount      = 0;
-        $this->fixableErrorCount = 0;
-        $this->fixableWarningCount = 0;
+        $this->errors       = [];
+        $this->warnings     = [];
+        $this->errorCount   = 0;
+        $this->warningCount = 0;
+        $this->fixableCount = 0;
 
         $this->replayingErrors = true;
 
@@ -212,5 +212,8 @@ class LocalFile extends File
         }
 
         $this->replayingErrors = false;
-    }
-}
+
+    }//end replayErrors()
+
+
+}//end class

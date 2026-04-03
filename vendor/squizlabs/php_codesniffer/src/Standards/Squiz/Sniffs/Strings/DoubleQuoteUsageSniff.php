@@ -3,8 +3,7 @@
  * Makes sure that any use of double quotes strings are warranted.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -15,32 +14,6 @@ use PHP_CodeSniffer\Sniffs\Sniff;
 
 class DoubleQuoteUsageSniff implements Sniff
 {
-
-    /**
-     * Escape chars which are supported in double quoted strings, but not in single quoted strings.
-     *
-     * @var array<string>
-     */
-    private const ESCAPE_CHARS = [
-        '\0',
-        '\1',
-        '\2',
-        '\3',
-        '\4',
-        '\5',
-        '\6',
-        '\7',
-        '\n',
-        '\r',
-        '\f',
-        '\t',
-        '\v',
-        '\x',
-        '\b',
-        '\e',
-        '\u',
-        '\'',
-    ];
 
 
     /**
@@ -54,7 +27,8 @@ class DoubleQuoteUsageSniff implements Sniff
             T_CONSTANT_ENCAPSED_STRING,
             T_DOUBLE_QUOTED_STRING,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -66,7 +40,7 @@ class DoubleQuoteUsageSniff implements Sniff
      *
      * @return int
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -105,7 +79,7 @@ class DoubleQuoteUsageSniff implements Sniff
 
         // The use of variables in double quoted strings is not allowed.
         if ($tokens[$stackPtr]['code'] === T_DOUBLE_QUOTED_STRING) {
-            $stringTokens = token_get_all('<?php ' . $workingString);
+            $stringTokens = token_get_all('<?php '.$workingString);
             foreach ($stringTokens as $token) {
                 if (is_array($token) === true && $token[0] === T_VARIABLE) {
                     $error = 'Variable "%s" not allowed in double quoted string; use concatenation instead';
@@ -115,9 +89,30 @@ class DoubleQuoteUsageSniff implements Sniff
             }
 
             return $skipTo;
-        }
+        }//end if
 
-        foreach (self::ESCAPE_CHARS as $testChar) {
+        $allowedChars = [
+            '\0',
+            '\1',
+            '\2',
+            '\3',
+            '\4',
+            '\5',
+            '\6',
+            '\7',
+            '\n',
+            '\r',
+            '\f',
+            '\t',
+            '\v',
+            '\x',
+            '\b',
+            '\e',
+            '\u',
+            '\'',
+        ];
+
+        foreach ($allowedChars as $testChar) {
             if (strpos($workingString, $testChar) !== false) {
                 return $skipTo;
             }
@@ -142,5 +137,8 @@ class DoubleQuoteUsageSniff implements Sniff
         }
 
         return $skipTo;
-    }
-}
+
+    }//end process()
+
+
+}//end class

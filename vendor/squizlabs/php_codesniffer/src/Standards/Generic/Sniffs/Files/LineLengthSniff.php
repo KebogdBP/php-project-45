@@ -7,8 +7,7 @@
  * figures can be changed in a ruleset.xml file.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -56,7 +55,8 @@ class LineLengthSniff implements Sniff
     public function register()
     {
         return [T_OPEN_TAG];
-    }
+
+    }//end register()
 
 
     /**
@@ -68,7 +68,7 @@ class LineLengthSniff implements Sniff
      *
      * @return int
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
         for ($i = 1; $i < $phpcsFile->numTokens; $i++) {
@@ -81,7 +81,8 @@ class LineLengthSniff implements Sniff
 
         // Ignore the rest of the file.
         return $phpcsFile->numTokens;
-    }
+
+    }//end process()
 
 
     /**
@@ -93,7 +94,7 @@ class LineLengthSniff implements Sniff
      *
      * @return void
      */
-    protected function checkLineLength(File $phpcsFile, array $tokens, int $stackPtr)
+    protected function checkLineLength($phpcsFile, $tokens, $stackPtr)
     {
         // The passed token is the first on the line.
         $stackPtr--;
@@ -112,15 +113,15 @@ class LineLengthSniff implements Sniff
         }
 
         $onlyComment = false;
-        if (isset(Tokens::COMMENT_TOKENS[$tokens[$stackPtr]['code']]) === true) {
-            $prevNonWhiteSpace = $phpcsFile->findPrevious(Tokens::EMPTY_TOKENS, ($stackPtr - 1), null, true);
+        if (isset(Tokens::$commentTokens[$tokens[$stackPtr]['code']]) === true) {
+            $prevNonWhiteSpace = $phpcsFile->findPrevious(Tokens::$emptyTokens, ($stackPtr - 1), null, true);
             if ($tokens[$stackPtr]['line'] !== $tokens[$prevNonWhiteSpace]['line']) {
                 $onlyComment = true;
             }
         }
 
         if ($onlyComment === true
-            && isset(Tokens::PHPCS_ANNOTATION_TOKENS[$tokens[$stackPtr]['code']]) === true
+            && isset(Tokens::$phpcsCommentTokens[$tokens[$stackPtr]['code']]) === true
         ) {
             // Ignore PHPCS annotation comments that are on a line by themselves.
             return;
@@ -129,7 +130,7 @@ class LineLengthSniff implements Sniff
         $lineLength = ($tokens[$stackPtr]['column'] + $tokens[$stackPtr]['length'] - 1);
 
         if ($this->ignoreComments === true
-            && isset(Tokens::COMMENT_TOKENS[$tokens[$stackPtr]['code']]) === true
+            && isset(Tokens::$commentTokens[$tokens[$stackPtr]['code']]) === true
         ) {
             // Trailing comments are being ignored in line length calculations.
             if ($onlyComment === true) {
@@ -143,9 +144,9 @@ class LineLengthSniff implements Sniff
         // Record metrics for common line length groupings.
         if ($lineLength <= 80) {
             $phpcsFile->recordMetric($stackPtr, 'Line length', '80 or less');
-        } elseif ($lineLength <= 120) {
+        } else if ($lineLength <= 120) {
             $phpcsFile->recordMetric($stackPtr, 'Line length', '81-120');
-        } elseif ($lineLength <= 150) {
+        } else if ($lineLength <= 150) {
             $phpcsFile->recordMetric($stackPtr, 'Line length', '121-150');
         } else {
             $phpcsFile->recordMetric($stackPtr, 'Line length', '151 or more');
@@ -172,7 +173,7 @@ class LineLengthSniff implements Sniff
                     return;
                 }
             }
-        }
+        }//end if
 
         if ($this->absoluteLineLimit > 0
             && $lineLength > $this->absoluteLineLimit
@@ -184,7 +185,7 @@ class LineLengthSniff implements Sniff
 
             $error = 'Line exceeds maximum limit of %s characters; contains %s characters';
             $phpcsFile->addError($error, $stackPtr, 'MaxExceeded', $data);
-        } elseif ($lineLength > $this->lineLimit) {
+        } else if ($lineLength > $this->lineLimit) {
             $data = [
                 $this->lineLimit,
                 $lineLength,
@@ -193,5 +194,8 @@ class LineLengthSniff implements Sniff
             $warning = 'Line exceeds %s characters; contains %s characters';
             $phpcsFile->addWarning($warning, $stackPtr, 'TooLong', $data);
         }
-    }
-}
+
+    }//end checkLineLength()
+
+
+}//end class

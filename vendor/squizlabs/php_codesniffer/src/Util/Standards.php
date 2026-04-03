@@ -3,8 +3,7 @@
  * Functions for helping process standards.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -28,7 +27,7 @@ class Standards
     {
         $ds = DIRECTORY_SEPARATOR;
 
-        $installedPaths = [dirname(__DIR__, 2) . $ds . 'src' . $ds . 'Standards'];
+        $installedPaths = [dirname(dirname(__DIR__)).$ds.'src'.$ds.'Standards'];
         $configPaths    = Config::getConfigData('installed_paths');
         if ($configPaths !== null) {
             $installedPaths = array_merge($installedPaths, explode(',', $configPaths));
@@ -37,7 +36,7 @@ class Standards
         $resolvedInstalledPaths = [];
         foreach ($installedPaths as $installedPath) {
             if (substr($installedPath, 0, 1) === '.') {
-                $installedPath = Common::realpath(__DIR__ . $ds . '..' . $ds . '..' . $ds . $installedPath);
+                $installedPath = Common::realpath(__DIR__.$ds.'..'.$ds.'..'.$ds.$installedPath);
                 if ($installedPath === false) {
                     continue;
                 }
@@ -47,7 +46,8 @@ class Standards
         }
 
         return $resolvedInstalledPaths;
-    }
+
+    }//end getInstalledStandardPaths()
 
 
     /**
@@ -77,8 +77,8 @@ class Standards
      * @see    getInstalledStandardPaths()
      */
     public static function getInstalledStandardDetails(
-        bool $includeGeneric = false,
-        string $standardsDir = ''
+        $includeGeneric=false,
+        $standardsDir=''
     ) {
         $rulesets = [];
 
@@ -90,7 +90,7 @@ class Standards
 
         foreach ($installedPaths as $standardsDir) {
             // Check if the installed dir is actually a standard itself.
-            $csFile = $standardsDir . '/ruleset.xml';
+            $csFile = $standardsDir.'/ruleset.xml';
             if (is_file($csFile) === true) {
                 $rulesets[] = $csFile;
                 continue;
@@ -111,13 +111,13 @@ class Standards
                     }
 
                     // Valid coding standard dirs include a ruleset.
-                    $csFile = $file->getPathname() . '/ruleset.xml';
+                    $csFile = $file->getPathname().'/ruleset.xml';
                     if (is_file($csFile) === true) {
                         $rulesets[] = $csFile;
                     }
                 }
             }
-        }
+        }//end foreach
 
         $installedStandards = [];
 
@@ -141,10 +141,11 @@ class Standards
                 'name'      => $standardName,
                 'namespace' => $namespace,
             ];
-        }
+        }//end foreach
 
         return $installedStandards;
-    }
+
+    }//end getInstalledStandardDetails()
 
 
     /**
@@ -165,8 +166,8 @@ class Standards
      * @see    isInstalledStandard()
      */
     public static function getInstalledStandards(
-        bool $includeGeneric = false,
-        string $standardsDir = ''
+        $includeGeneric=false,
+        $standardsDir=''
     ) {
         $installedStandards = [];
 
@@ -178,7 +179,7 @@ class Standards
 
         foreach ($installedPaths as $standardsDir) {
             // Check if the installed dir is actually a standard itself.
-            $csFile = $standardsDir . '/ruleset.xml';
+            $csFile = $standardsDir.'/ruleset.xml';
             if (is_file($csFile) === true) {
                 $basename = basename($standardsDir);
                 $installedStandards[$basename] = $basename;
@@ -202,7 +203,7 @@ class Standards
                     }
 
                     // Valid coding standard dirs include a ruleset.
-                    $csFile = $file->getPathname() . '/ruleset.xml';
+                    $csFile = $file->getPathname().'/ruleset.xml';
                     if (is_file($csFile) === true) {
                         $standardsInDir[$filename] = $filename;
                     }
@@ -211,10 +212,11 @@ class Standards
 
             natsort($standardsInDir);
             $installedStandards += $standardsInDir;
-        }
+        }//end foreach
 
         return $installedStandards;
-    }
+
+    }//end getInstalledStandards()
 
 
     /**
@@ -229,7 +231,7 @@ class Standards
      * @return boolean
      * @see    getInstalledStandards()
      */
-    public static function isInstalledStandard(string $standard)
+    public static function isInstalledStandard($standard)
     {
         $path = self::getInstalledStandardPath($standard);
         if ($path !== null && strpos($path, 'ruleset.xml') !== false) {
@@ -253,14 +255,15 @@ class Standards
 
             // If it is a directory with a ruleset.xml file in it,
             // it is a standard.
-            $ruleset = rtrim($standard, ' /\\') . DIRECTORY_SEPARATOR . 'ruleset.xml';
+            $ruleset = rtrim($standard, ' /\\').DIRECTORY_SEPARATOR.'ruleset.xml';
             if (is_file($ruleset) === true) {
                 return true;
             }
-        }
+        }//end if
 
         return false;
-    }
+
+    }//end isInstalledStandard()
 
 
     /**
@@ -274,7 +277,7 @@ class Standards
      *
      * @return string|null
      */
-    public static function getInstalledStandardPath(string $standard)
+    public static function getInstalledStandardPath($standard)
     {
         if (strpos($standard, '.') !== false) {
             return null;
@@ -282,7 +285,7 @@ class Standards
 
         $installedPaths = self::getInstalledStandardPaths();
         foreach ($installedPaths as $installedPath) {
-            $standardPath = $installedPath . DIRECTORY_SEPARATOR . $standard;
+            $standardPath = $installedPath.DIRECTORY_SEPARATOR.$standard;
             if (file_exists($standardPath) === false) {
                 if (basename($installedPath) !== $standard) {
                     continue;
@@ -291,59 +294,47 @@ class Standards
                 $standardPath = $installedPath;
             }
 
-            $path = Common::realpath($standardPath . DIRECTORY_SEPARATOR . 'ruleset.xml');
+            $path = Common::realpath($standardPath.DIRECTORY_SEPARATOR.'ruleset.xml');
 
             if ($path !== false && is_file($path) === true) {
                 return $path;
-            } elseif (Common::isPharFile($standardPath) === true) {
+            } else if (Common::isPharFile($standardPath) === true) {
                 $path = Common::realpath($standardPath);
                 if ($path !== false) {
                     return $path;
                 }
             }
-        }
+        }//end foreach
 
         return null;
-    }
 
-
-    /**
-     * Prepares a list of installed coding standards for display.
-     *
-     * @return string
-     */
-    public static function prepareInstalledStandardsForDisplay()
-    {
-        $installedStandards = self::getInstalledStandards();
-        $numStandards       = count($installedStandards);
-
-        $output = '';
-        if ($numStandards === 0) {
-            $output .= 'No coding standards are installed.';
-        } else {
-            $lastStandard = array_pop($installedStandards);
-            if ($numStandards === 1) {
-                $output .= "The only coding standard installed is $lastStandard";
-            } else {
-                $standardList  = implode(', ', $installedStandards);
-                $standardList .= ' and ' . $lastStandard;
-                $output       .= 'The installed coding standards are ' . $standardList;
-            }
-        }
-
-        return $output;
-    }
+    }//end getInstalledStandardPath()
 
 
     /**
      * Prints out a list of installed coding standards.
      *
-     * @deprecated 4.0.0 Use `echo Standards::prepareInstalledStandardsForDisplay()` instead.
-     *
      * @return void
      */
     public static function printInstalledStandards()
     {
-        echo self::prepareInstalledStandardsForDisplay(), PHP_EOL;
-    }
-}
+        $installedStandards = self::getInstalledStandards();
+        $numStandards       = count($installedStandards);
+
+        if ($numStandards === 0) {
+            echo 'No coding standards are installed.'.PHP_EOL;
+        } else {
+            $lastStandard = array_pop($installedStandards);
+            if ($numStandards === 1) {
+                echo "The only coding standard installed is $lastStandard".PHP_EOL;
+            } else {
+                $standardList  = implode(', ', $installedStandards);
+                $standardList .= ' and '.$lastStandard;
+                echo 'The installed coding standards are '.$standardList.PHP_EOL;
+            }
+        }
+
+    }//end printInstalledStandards()
+
+
+}//end class

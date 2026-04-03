@@ -3,8 +3,7 @@
  * Verifies that import statements are defined correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -26,7 +25,8 @@ class ImportStatementSniff implements Sniff
     public function register()
     {
         return [T_USE];
-    }
+
+    }//end register()
 
 
     /**
@@ -38,29 +38,29 @@ class ImportStatementSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
         // Make sure this is not a closure USE group.
-        if (isset($tokens[$stackPtr]['parenthesis_owner']) === true) {
+        $next = $phpcsFile->findNext(Tokens::$emptyTokens, ($stackPtr + 1), null, true);
+        if ($tokens[$next]['code'] === T_OPEN_PARENTHESIS) {
             return;
         }
 
-        if ($phpcsFile->hasCondition($stackPtr, Tokens::OO_SCOPE_TOKENS) === true) {
+        if ($phpcsFile->hasCondition($stackPtr, Tokens::$ooScopeTokens) === true) {
             // This rule only applies to import statements.
             return;
         }
 
-        $next = $phpcsFile->findNext(Tokens::EMPTY_TOKENS, ($stackPtr + 1), null, true);
         if ($tokens[$next]['code'] === T_STRING
             && (strtolower($tokens[$next]['content']) === 'function'
             || strtolower($tokens[$next]['content']) === 'const')
         ) {
-            $next = $phpcsFile->findNext(Tokens::EMPTY_TOKENS, ($next + 1), null, true);
+            $next = $phpcsFile->findNext(Tokens::$emptyTokens, ($next + 1), null, true);
         }
 
-        if ($tokens[$next]['code'] !== T_NAME_FULLY_QUALIFIED) {
+        if ($tokens[$next]['code'] !== T_NS_SEPARATOR) {
             return;
         }
 
@@ -68,7 +68,10 @@ class ImportStatementSniff implements Sniff
         $fix   = $phpcsFile->addFixableError($error, $next, 'LeadingSlash');
 
         if ($fix === true) {
-            $phpcsFile->fixer->replaceToken($next, ltrim($tokens[$next]['content'], '\\'));
+            $phpcsFile->fixer->replaceToken($next, '');
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

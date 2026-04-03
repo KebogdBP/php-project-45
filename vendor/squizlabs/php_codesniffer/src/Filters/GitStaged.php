@@ -6,7 +6,6 @@
  *
  * @author    Juliette Reinders Folmer <phpcs_nospam@adviesenzo.nl>
  * @copyright 2018 Juliette Reinders Folmer. All rights reserved.
- * @copyright 2023 PHPCSStandards and contributors
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -21,20 +20,37 @@ class GitStaged extends ExactMatch
     /**
      * Get a list of file paths to exclude.
      *
-     * @since 3.9.0 Replaces the `getBlacklist()` method, which was removed in PHPCS 4.0.0.
+     * @since 3.9.0
      *
      * @return array
      */
     protected function getDisallowedFiles()
     {
         return [];
-    }
+
+    }//end getDisallowedFiles()
+
+
+    /**
+     * Get a list of file paths to exclude.
+     *
+     * @deprecated 3.9.0 Overload the `getDisallowedFiles()` method instead.
+     *
+     * @codeCoverageIgnore
+     *
+     * @return array
+     */
+    protected function getBlacklist()
+    {
+        return $this->getDisallowedFiles();
+
+    }//end getBlacklist()
 
 
     /**
      * Get a list of file paths to include.
      *
-     * @since 3.9.0 Replaces the `getWhitelist()` method, which was removed in PHPCS 4.0.0.
+     * @since 3.9.0
      *
      * @return array
      */
@@ -42,7 +58,7 @@ class GitStaged extends ExactMatch
     {
         $modified = [];
 
-        $cmd    = 'git diff --cached --name-only -- ' . escapeshellarg($this->basedir);
+        $cmd    = 'git diff --cached --name-only -- '.escapeshellarg($this->basedir);
         $output = $this->exec($cmd);
 
         $basedir = $this->basedir;
@@ -64,7 +80,24 @@ class GitStaged extends ExactMatch
         }
 
         return $modified;
-    }
+
+    }//end getAllowedFiles()
+
+
+    /**
+     * Get a list of file paths to include.
+     *
+     * @deprecated 3.9.0 Overload the `getAllowedFiles()` method instead.
+     *
+     * @codeCoverageIgnore
+     *
+     * @return array
+     */
+    protected function getWhitelist()
+    {
+        return $this->getAllowedFiles();
+
+    }//end getWhitelist()
 
 
     /**
@@ -77,7 +110,7 @@ class GitStaged extends ExactMatch
      *
      * @return array
      */
-    protected function exec(string $cmd)
+    protected function exec($cmd)
     {
         $output   = [];
         $lastLine = exec($cmd, $output);
@@ -86,5 +119,8 @@ class GitStaged extends ExactMatch
         }
 
         return $output;
-    }
-}
+
+    }//end exec()
+
+
+}//end class

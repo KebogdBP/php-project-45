@@ -3,8 +3,7 @@
  * Ensures method names are defined using camel case.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -28,7 +27,7 @@ class CamelCapsMethodNameSniff extends GenericCamelCapsFunctionNameSniff
      *
      * @return void
      */
-    protected function processTokenWithinScope(File $phpcsFile, int $stackPtr, int $currScope)
+    protected function processTokenWithinScope(File $phpcsFile, $stackPtr, $currScope)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -41,16 +40,16 @@ class CamelCapsMethodNameSniff extends GenericCamelCapsFunctionNameSniff
         }
 
         $methodName = $phpcsFile->getDeclarationName($stackPtr);
-        if ($methodName === '') {
-            // Ignore live coding.
+        if ($methodName === null) {
+            // Ignore closures.
             return;
         }
 
         // Ignore magic methods.
         if (preg_match('|^__[^_]|', $methodName) !== 0) {
             $magicPart = strtolower(substr($methodName, 2));
-            if (isset(static::MAGIC_METHODS[$magicPart]) === true
-                || isset(static::DOUBLE_UNDERSCORE_METHODS[$magicPart]) === true
+            if (isset($this->magicMethods[$magicPart]) === true
+                || isset($this->methodsDoubleUnderscore[$magicPart]) === true
             ) {
                 return;
             }
@@ -59,18 +58,19 @@ class CamelCapsMethodNameSniff extends GenericCamelCapsFunctionNameSniff
         $testName = ltrim($methodName, '_');
         if ($testName !== '' &&  Common::isCamelCaps($testName, false, true, false) === false) {
             $error     = 'Method name "%s" is not in camel caps format';
-            $className = '[Anonymous Class]';
-            if ($tokens[$currScope]['code'] !== T_ANON_CLASS) {
-                $className = $phpcsFile->getDeclarationName($currScope);
+            $className = $phpcsFile->getDeclarationName($currScope);
+            if (isset($className) === false) {
+                $className = '[Anonymous Class]';
             }
 
-            $errorData = [$className . '::' . $methodName];
+            $errorData = [$className.'::'.$methodName];
             $phpcsFile->addError($error, $stackPtr, 'NotCamelCaps', $errorData);
             $phpcsFile->recordMetric($stackPtr, 'CamelCase method name', 'no');
         } else {
             $phpcsFile->recordMetric($stackPtr, 'CamelCase method name', 'yes');
         }
-    }
+
+    }//end processTokenWithinScope()
 
 
     /**
@@ -82,7 +82,10 @@ class CamelCapsMethodNameSniff extends GenericCamelCapsFunctionNameSniff
      *
      * @return void
      */
-    protected function processTokenOutsideScope(File $phpcsFile, int $stackPtr)
+    protected function processTokenOutsideScope(File $phpcsFile, $stackPtr)
     {
-    }
-}
+
+    }//end processTokenOutsideScope()
+
+
+}//end class

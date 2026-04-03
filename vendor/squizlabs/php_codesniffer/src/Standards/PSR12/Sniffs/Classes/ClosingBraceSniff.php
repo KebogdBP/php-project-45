@@ -3,8 +3,7 @@
  * Verifies that closing braces are the last content on a line.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2019 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -31,7 +30,8 @@ class ClosingBraceSniff implements Sniff
             T_ENUM,
             T_FUNCTION,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -43,7 +43,7 @@ class ClosingBraceSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
         if (isset($tokens[$stackPtr]['scope_closer']) === false) {
@@ -60,5 +60,8 @@ class ClosingBraceSniff implements Sniff
 
         $error = 'Closing brace must not be followed by any comment or statement on the same line';
         $phpcsFile->addError($error, $closer, 'StatementAfter');
-    }
-}
+
+    }//end process()
+
+
+}//end class

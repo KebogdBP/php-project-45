@@ -3,8 +3,7 @@
  * Verifies that classes are instantiated with parentheses.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -26,7 +25,8 @@ class ClassInstantiationSniff implements Sniff
     public function register()
     {
         return [T_NEW];
-    }
+
+    }//end register()
 
 
     /**
@@ -38,13 +38,14 @@ class ClassInstantiationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
         // Find the class name.
-        $allowed  = Tokens::NAME_TOKENS;
-        $allowed += [
+        $allowed = [
+            T_STRING                   => T_STRING,
+            T_NS_SEPARATOR             => T_NS_SEPARATOR,
             T_SELF                     => T_SELF,
             T_STATIC                   => T_STATIC,
             T_PARENT                   => T_PARENT,
@@ -55,7 +56,7 @@ class ClassInstantiationSniff implements Sniff
             T_DOUBLE_COLON             => T_DOUBLE_COLON,
         ];
 
-        $allowed += Tokens::EMPTY_TOKENS;
+        $allowed += Tokens::$emptyTokens;
 
         $classNameEnd = null;
         for ($i = ($stackPtr + 1); $i < $phpcsFile->numTokens; $i++) {
@@ -82,7 +83,7 @@ class ClassInstantiationSniff implements Sniff
 
             $classNameEnd = $i;
             break;
-        }
+        }//end for
 
         if ($classNameEnd === null) {
             return;
@@ -101,8 +102,11 @@ class ClassInstantiationSniff implements Sniff
         $error = 'Parentheses must be used when instantiating a new class';
         $fix   = $phpcsFile->addFixableError($error, $stackPtr, 'MissingParentheses');
         if ($fix === true) {
-            $prev = $phpcsFile->findPrevious(Tokens::EMPTY_TOKENS, ($classNameEnd - 1), null, true);
+            $prev = $phpcsFile->findPrevious(Tokens::$emptyTokens, ($classNameEnd - 1), null, true);
             $phpcsFile->fixer->addContent($prev, '()');
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

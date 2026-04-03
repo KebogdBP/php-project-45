@@ -3,8 +3,7 @@
  * Parses and verifies the doc comments for classes.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -29,7 +28,8 @@ class ClassCommentSniff extends FileCommentSniff
             T_TRAIT,
             T_ENUM,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -41,7 +41,7 @@ class ClassCommentSniff extends FileCommentSniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens    = $phpcsFile->getTokens();
         $type      = strtolower($tokens[$stackPtr]['content']);
@@ -87,7 +87,8 @@ class ClassCommentSniff extends FileCommentSniff
 
         // Check each tag.
         $this->processTags($phpcsFile, $stackPtr, $tokens[$commentEnd]['comment_opener']);
-    }
+
+    }//end process()
 
 
     /**
@@ -98,7 +99,7 @@ class ClassCommentSniff extends FileCommentSniff
      *
      * @return void
      */
-    protected function processVersion(File $phpcsFile, array $tags)
+    protected function processVersion($phpcsFile, array $tags)
     {
         $tokens = $phpcsFile->getTokens();
         foreach ($tags as $tag) {
@@ -114,5 +115,8 @@ class ClassCommentSniff extends FileCommentSniff
                 $phpcsFile->addWarning($error, $tag, 'InvalidVersion', $data);
             }
         }
-    }
-}
+
+    }//end processVersion()
+
+
+}//end class

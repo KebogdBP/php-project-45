@@ -3,8 +3,7 @@
  * Checks the //end ... comments on classes, enums, functions, interfaces and traits.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -31,7 +30,8 @@ class ClosingDeclarationCommentSniff implements Sniff
             T_INTERFACE,
             T_TRAIT,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -43,7 +43,7 @@ class ClosingDeclarationCommentSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -62,29 +62,27 @@ class ClosingDeclarationCommentSniff implements Sniff
             }
 
             if (isset($tokens[$stackPtr]['scope_closer']) === false) {
-                // Parse error or live coding.
+                $error = 'Possible parse error: non-abstract method defined as abstract';
+                $phpcsFile->addWarning($error, $stackPtr, 'Abstract');
                 return;
             }
 
             $decName = $phpcsFile->getDeclarationName($stackPtr);
-            if ($decName === '') {
-                // Parse error or live coding.
-                return;
-            }
-
-            $comment = '//end ' . $decName . '()';
-        } elseif ($tokens[$stackPtr]['code'] === T_CLASS) {
+            $comment = '//end '.$decName.'()';
+        } else if ($tokens[$stackPtr]['code'] === T_CLASS) {
             $comment = '//end class';
-        } elseif ($tokens[$stackPtr]['code'] === T_INTERFACE) {
+        } else if ($tokens[$stackPtr]['code'] === T_INTERFACE) {
             $comment = '//end interface';
-        } elseif ($tokens[$stackPtr]['code'] === T_TRAIT) {
+        } else if ($tokens[$stackPtr]['code'] === T_TRAIT) {
             $comment = '//end trait';
         } else {
             $comment = '//end enum';
-        }
+        }//end if
 
         if (isset($tokens[$stackPtr]['scope_closer']) === false) {
-            // Parse error or live coding.
+            $error = 'Possible parse error: %s missing opening or closing brace';
+            $data  = [$tokens[$stackPtr]['content']];
+            $phpcsFile->addWarning($error, $stackPtr, 'MissingBrace', $data);
             return;
         }
 
@@ -104,26 +102,29 @@ class ClosingDeclarationCommentSniff implements Sniff
 
                     // Just in case, because indentation fixes can add indents onto
                     // these comments and cause us to be unable to fix them.
-                    $phpcsFile->fixer->replaceToken($next, $comment . $phpcsFile->eolChar);
+                    $phpcsFile->fixer->replaceToken($next, $comment.$phpcsFile->eolChar);
                     $phpcsFile->fixer->endChangeset();
                 }
             } else {
                 $fix = $phpcsFile->addFixableError('Expected %s', $closingBracket, 'Missing', $data);
                 if ($fix === true) {
-                    $phpcsFile->fixer->replaceToken($closingBracket, '}' . $comment);
+                    $phpcsFile->fixer->replaceToken($closingBracket, '}'.$comment);
                 }
             }
 
             return;
-        }
+        }//end if
 
         if (rtrim($tokens[($closingBracket + 1)]['content']) !== $comment) {
             $fix = $phpcsFile->addFixableError('Expected %s', $closingBracket, 'Incorrect', $data);
             if ($fix === true) {
-                $phpcsFile->fixer->replaceToken(($closingBracket + 1), $comment . $phpcsFile->eolChar);
+                $phpcsFile->fixer->replaceToken(($closingBracket + 1), $comment.$phpcsFile->eolChar);
             }
 
             return;
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

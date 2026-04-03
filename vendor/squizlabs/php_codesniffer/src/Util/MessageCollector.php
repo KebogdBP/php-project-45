@@ -23,7 +23,6 @@ namespace PHP_CodeSniffer\Util;
 
 use InvalidArgumentException;
 use PHP_CodeSniffer\Exceptions\RuntimeException;
-use PHP_CodeSniffer\Util\Writers\StatusWriter;
 
 final class MessageCollector
 {
@@ -33,42 +32,42 @@ final class MessageCollector
      *
      * @var int
      */
-    public const ERROR = 1;
+    const ERROR = 1;
 
     /**
      * Indicator for a warning.
      *
      * @var int
      */
-    public const WARNING = 2;
+    const WARNING = 2;
 
     /**
      * Indicator for a notice.
      *
      * @var int
      */
-    public const NOTICE = 4;
+    const NOTICE = 4;
 
     /**
      * Indicator for a deprecation notice.
      *
      * @var int
      */
-    public const DEPRECATED = 8;
+    const DEPRECATED = 8;
 
     /**
      * Indicator for ordering the messages based on severity first, order received second.
      *
      * @var string
      */
-    public const ORDERBY_SEVERITY = 'severity';
+    const ORDERBY_SEVERITY = 'severity';
 
     /**
      * Indicator for ordering the messages based on the order in which they were received.
      *
      * @var string
      */
-    public const ORDERBY_RECEIVED = 'received';
+    const ORDERBY_RECEIVED = 'received';
 
     /**
      * Collected messages.
@@ -96,10 +95,10 @@ final class MessageCollector
      * @throws \InvalidArgumentException If the message text is not a string.
      * @throws \InvalidArgumentException If the message type is not one of the accepted types.
      */
-    public function add($message, $type = self::NOTICE)
+    public function add($message, $type=self::NOTICE)
     {
         if (is_string($message) === false) {
-            throw new InvalidArgumentException('The $message should be of type string. Received: ' . gettype($message) . '.');
+            throw new InvalidArgumentException('The $message should be of type string. Received: '.gettype($message).'.');
         }
 
         if ($type !== self::ERROR
@@ -107,14 +106,15 @@ final class MessageCollector
             && $type !== self::NOTICE
             && $type !== self::DEPRECATED
         ) {
-            throw new InvalidArgumentException('The message $type should be one of the predefined MessageCollector constants. Received: ' . $type . '.');
+            throw new InvalidArgumentException('The message $type should be one of the predefined MessageCollector constants. Received: '.$type.'.');
         }
 
         $this->cache[] = [
             'message' => $message,
             'type'    => $type,
         ];
-    }
+
+    }//end add()
 
 
     /**
@@ -124,10 +124,11 @@ final class MessageCollector
      */
     public function containsBlockingErrors()
     {
-        $seenTypes     = array_column($this->cache, 'type');
+        $seenTypes     = $this->arrayColumn($this->cache, 'type');
         $typeFrequency = array_count_values($seenTypes);
         return isset($typeFrequency[self::ERROR]);
-    }
+
+    }//end containsBlockingErrors()
 
 
     /**
@@ -144,7 +145,7 @@ final class MessageCollector
      *
      * @throws \PHP_CodeSniffer\Exceptions\RuntimeException When there are blocking errors.
      */
-    public function display(string $order = self::ORDERBY_SEVERITY)
+    public function display($order=self::ORDERBY_SEVERITY)
     {
         if ($this->cache === []) {
             return;
@@ -155,19 +156,20 @@ final class MessageCollector
         $this->clearCache();
 
         if ($order === self::ORDERBY_RECEIVED) {
-            $messages = array_column($messageInfo, 'message');
+            $messages = $this->arrayColumn($messageInfo, 'message');
         } else {
             $messages = $this->sortBySeverity($messageInfo);
         }
 
-        $allMessages = implode(PHP_EOL, $messages);
+        $allMessages = implode(PHP_EOL, $messages).PHP_EOL.PHP_EOL;
 
         if ($blocking === true) {
-            throw new RuntimeException($allMessages . PHP_EOL . PHP_EOL);
+            throw new RuntimeException($allMessages);
         } else {
-            StatusWriter::write($allMessages, 0, 2);
+            echo $allMessages;
         }
-    }
+
+    }//end display()
 
 
     /**
@@ -179,12 +181,13 @@ final class MessageCollector
      */
     private function prefixAll(array $messages)
     {
-        foreach ($messages as $i => list('message' => $message, 'type' => $type)) {
-            $messages[$i]['message'] = $this->prefix($message, $type);
+        foreach ($messages as $i => $details) {
+            $messages[$i]['message'] = $this->prefix($details['message'], $details['type']);
         }
 
         return $messages;
-    }
+
+    }//end prefixAll()
 
 
     /**
@@ -195,28 +198,29 @@ final class MessageCollector
      *
      * @return string
      */
-    private function prefix(string $message, int $type)
+    private function prefix($message, $type)
     {
         switch ($type) {
-            case self::ERROR:
-                $message = 'ERROR: ' . $message;
-                break;
+        case self::ERROR:
+            $message = 'ERROR: '.$message;
+            break;
 
-            case self::WARNING:
-                $message = 'WARNING: ' . $message;
-                break;
+        case self::WARNING:
+            $message = 'WARNING: '.$message;
+            break;
 
-            case self::DEPRECATED:
-                $message = 'DEPRECATED: ' . $message;
-                break;
+        case self::DEPRECATED:
+            $message = 'DEPRECATED: '.$message;
+            break;
 
-            default:
-                $message = 'NOTICE: ' . $message;
-                break;
+        default:
+            $message = 'NOTICE: '.$message;
+            break;
         }
 
         return $message;
-    }
+
+    }//end prefix()
 
 
     /**
@@ -237,28 +241,29 @@ final class MessageCollector
         $notices      = [];
         $deprecations = [];
 
-        foreach ($messages as list('message' => $message, 'type' => $type)) {
-            switch ($type) {
-                case self::ERROR:
-                    $errors[] = $message;
-                    break;
+        foreach ($messages as $details) {
+            switch ($details['type']) {
+            case self::ERROR:
+                $errors[] = $details['message'];
+                break;
 
-                case self::WARNING:
-                    $warnings[] = $message;
-                    break;
+            case self::WARNING:
+                $warnings[] = $details['message'];
+                break;
 
-                case self::DEPRECATED:
-                    $deprecations[] = $message;
-                    break;
+            case self::DEPRECATED:
+                $deprecations[] = $details['message'];
+                break;
 
-                default:
-                    $notices[] = $message;
-                    break;
+            default:
+                $notices[] = $details['message'];
+                break;
             }
         }
 
         return array_merge($errors, $warnings, $notices, $deprecations);
-    }
+
+    }//end sortBySeverity()
 
 
     /**
@@ -269,5 +274,37 @@ final class MessageCollector
     private function clearCache()
     {
         $this->cache = [];
-    }
-}
+
+    }//end clearCache()
+
+
+    /**
+     * Return the values from a single column in the input array.
+     *
+     * Polyfill for the PHP 5.5+ native array_column() function (for the functionality needed here).
+     *
+     * @param array<array<string, string|int>> $input     A multi-dimensional array from which to pull a column of values.
+     * @param string                           $columnKey The name of the column of values to return.
+     *
+     * @link https://www.php.net/function.array-column
+     *
+     * @return array<string|int>
+     */
+    private function arrayColumn(array $input, $columnKey)
+    {
+        if (function_exists('array_column') === true) {
+            // PHP 5.5+.
+            return array_column($input, $columnKey);
+        }
+
+        // PHP 5.4.
+        $callback = static function ($row) use ($columnKey) {
+            return $row[$columnKey];
+        };
+
+        return array_map($callback, $input);
+
+    }//end arrayColumn()
+
+
+}//end class

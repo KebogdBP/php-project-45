@@ -3,8 +3,7 @@
  * Tests the spacing of shorthand IF statements.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -25,7 +24,8 @@ class InlineIfDeclarationSniff implements Sniff
     public function register()
     {
         return [T_INLINE_THEN];
-    }
+
+    }//end register()
 
 
     /**
@@ -37,7 +37,7 @@ class InlineIfDeclarationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -132,7 +132,7 @@ class InlineIfDeclarationSniff implements Sniff
                     }
                 }
             }
-        }
+        }//end if
 
         $contentAfter = $phpcsFile->findNext(T_WHITESPACE, ($inlineElse + 1), null, true);
         $spaceAfter   = (($tokens[$contentAfter]['column']) - ($tokens[$inlineElse]['column'] + 1));
@@ -148,5 +148,8 @@ class InlineIfDeclarationSniff implements Sniff
                 }
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

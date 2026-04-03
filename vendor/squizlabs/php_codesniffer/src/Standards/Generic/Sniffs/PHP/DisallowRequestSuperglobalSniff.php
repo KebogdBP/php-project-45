@@ -3,8 +3,7 @@
  * Ensures the $_REQUEST superglobal is not used
  *
  * @author    Jeantwan Teuma <jeant.m24@gmail.com>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2019 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -25,7 +24,8 @@ class DisallowRequestSuperglobalSniff implements Sniff
     public function register()
     {
         return [T_VARIABLE];
-    }
+
+    }//end register()
 
 
     /**
@@ -37,7 +37,7 @@ class DisallowRequestSuperglobalSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -48,5 +48,8 @@ class DisallowRequestSuperglobalSniff implements Sniff
 
         $error = 'The $_REQUEST superglobal should not be used; use $_GET, $_POST, or $_COOKIE instead';
         $phpcsFile->addError($error, $stackPtr, 'Found');
-    }
-}
+
+    }//end process()
+
+
+}//end class

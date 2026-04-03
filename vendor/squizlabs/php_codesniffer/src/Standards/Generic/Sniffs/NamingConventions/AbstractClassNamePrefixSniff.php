@@ -23,7 +23,8 @@ class AbstractClassNamePrefixSniff implements Sniff
     public function register()
     {
         return [T_CLASS];
-    }
+
+    }//end register()
 
 
     /**
@@ -35,7 +36,7 @@ class AbstractClassNamePrefixSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         if ($phpcsFile->getClassProperties($stackPtr)['is_abstract'] === false) {
             // This class is not abstract so we don't need to check it.
@@ -43,7 +44,7 @@ class AbstractClassNamePrefixSniff implements Sniff
         }
 
         $className = $phpcsFile->getDeclarationName($stackPtr);
-        if ($className === '') {
+        if ($className === null) {
             // Live coding or parse error.
             return;
         }
@@ -52,5 +53,8 @@ class AbstractClassNamePrefixSniff implements Sniff
         if (strtolower($prefix) !== 'abstract') {
             $phpcsFile->addError('Abstract class names must be prefixed with "Abstract"; found "%s"', $stackPtr, 'Missing', [$className]);
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

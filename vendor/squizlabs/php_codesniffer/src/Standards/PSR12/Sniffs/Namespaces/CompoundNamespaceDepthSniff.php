@@ -3,8 +3,7 @@
  * Verifies that compound namespaces are not defined too deep.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -32,7 +31,8 @@ class CompoundNamespaceDepthSniff implements Sniff
     public function register()
     {
         return [T_OPEN_USE_GROUP];
-    }
+
+    }//end register()
 
 
     /**
@@ -44,7 +44,7 @@ class CompoundNamespaceDepthSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $this->maxDepth = (int) $this->maxDepth;
 
@@ -62,11 +62,6 @@ class CompoundNamespaceDepthSniff implements Sniff
                 continue;
             }
 
-            if ($tokens[$i]['code'] === T_NAME_FULLY_QUALIFIED || $tokens[$i]['code'] === T_NAME_QUALIFIED) {
-                $depth += substr_count($tokens[$i]['content'], '\\');
-                continue;
-            }
-
             if ($i === $end || $tokens[$i]['code'] === T_COMMA) {
                 // End of a namespace.
                 if ($depth > $this->maxDepth) {
@@ -78,5 +73,8 @@ class CompoundNamespaceDepthSniff implements Sniff
                 $depth = 1;
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

@@ -3,8 +3,7 @@
  * Checks that object operators are indented correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -15,16 +14,6 @@ use PHP_CodeSniffer\Sniffs\Sniff;
 
 class ObjectOperatorIndentSniff implements Sniff
 {
-
-    /**
-     * Tokens to listen for.
-     *
-     * @var array<int|string>
-     */
-    private const TARGET_TOKENS = [
-        T_OBJECT_OPERATOR,
-        T_NULLSAFE_OBJECT_OPERATOR,
-    ];
 
     /**
      * The number of spaces code should be indented.
@@ -40,6 +29,16 @@ class ObjectOperatorIndentSniff implements Sniff
      */
     public $multilevel = false;
 
+    /**
+     * Tokens to listen for.
+     *
+     * @var array
+     */
+    private $targets = [
+        T_OBJECT_OPERATOR,
+        T_NULLSAFE_OBJECT_OPERATOR,
+    ];
+
 
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -48,8 +47,9 @@ class ObjectOperatorIndentSniff implements Sniff
      */
     public function register()
     {
-        return self::TARGET_TOKENS;
-    }
+        return $this->targets;
+
+    }//end register()
 
 
     /**
@@ -61,20 +61,20 @@ class ObjectOperatorIndentSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
         // Make sure this is the first object operator in a chain of them.
         $start = $phpcsFile->findStartOfStatement($stackPtr);
-        $prev  = $phpcsFile->findPrevious(self::TARGET_TOKENS, ($stackPtr - 1), $start);
+        $prev  = $phpcsFile->findPrevious($this->targets, ($stackPtr - 1), $start);
         if ($prev !== false) {
             return;
         }
 
         // Make sure this is a chained call.
         $end  = $phpcsFile->findEndOfStatement($stackPtr);
-        $next = $phpcsFile->findNext(self::TARGET_TOKENS, ($stackPtr + 1), $end);
+        $next = $phpcsFile->findNext($this->targets, ($stackPtr + 1), $end);
         if ($next === false) {
             // Not a chained call.
             return;
@@ -169,7 +169,7 @@ class ObjectOperatorIndentSniff implements Sniff
                     }
 
                     $previousIndent = $expectedIndent;
-                }
+                }//end if
 
                 // It cant be the last thing on the line either.
                 $content = $phpcsFile->findNext(T_WHITESPACE, ($next + 1), null, true);
@@ -186,13 +186,16 @@ class ObjectOperatorIndentSniff implements Sniff
                         $phpcsFile->fixer->endChangeset();
                     }
                 }
-            }
+            }//end if
 
             $next = $phpcsFile->findNext(
-                self::TARGET_TOKENS,
+                $this->targets,
                 ($next + 1),
                 $end
             );
-        }
-    }
-}
+        }//end while
+
+    }//end process()
+
+
+}//end class

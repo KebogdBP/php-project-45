@@ -3,8 +3,7 @@
  * Ensures the PHP_SAPI constant is used instead of php_sapi_name().
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -24,11 +23,9 @@ class SAPIUsageSniff implements Sniff
      */
     public function register()
     {
-        return [
-            T_STRING,
-            T_NAME_FULLY_QUALIFIED,
-        ];
-    }
+        return [T_STRING];
+
+    }//end register()
 
 
     /**
@@ -40,14 +37,9 @@ class SAPIUsageSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
-
-        $function = strtolower(ltrim($tokens[$stackPtr]['content'], '\\'));
-        if ($function !== 'php_sapi_name') {
-            return;
-        }
 
         $ignore = [
             T_DOUBLE_COLON             => true,
@@ -63,7 +55,13 @@ class SAPIUsageSniff implements Sniff
             return;
         }
 
-        $error = 'Use the PHP_SAPI constant instead of calling php_sapi_name()';
-        $phpcsFile->addError($error, $stackPtr, 'FunctionFound');
-    }
-}
+        $function = strtolower($tokens[$stackPtr]['content']);
+        if ($function === 'php_sapi_name') {
+            $error = 'Use the PHP_SAPI constant instead of calling php_sapi_name()';
+            $phpcsFile->addError($error, $stackPtr, 'FunctionFound');
+        }
+
+    }//end process()
+
+
+}//end class

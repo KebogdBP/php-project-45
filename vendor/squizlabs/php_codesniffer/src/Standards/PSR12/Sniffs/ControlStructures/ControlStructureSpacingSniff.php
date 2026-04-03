@@ -3,8 +3,7 @@
  * Checks that control structures have the correct spacing.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2019 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -39,7 +38,8 @@ class ControlStructureSpacingSniff implements Sniff
     public function __construct()
     {
         $this->psr2ControlStructureSpacing = new PSR2ControlStructureSpacing();
-    }
+
+    }//end __construct()
 
 
     /**
@@ -59,7 +59,8 @@ class ControlStructureSpacingSniff implements Sniff
             T_CATCH,
             T_MATCH,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -71,7 +72,7 @@ class ControlStructureSpacingSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -123,7 +124,7 @@ class ControlStructureSpacingSniff implements Sniff
         for ($i = $parenOpener; $i < $parenCloser; $i++) {
             if ($tokens[$i]['column'] !== 1
                 || $tokens[($i + 1)]['line'] > $tokens[$i]['line']
-                || isset(Tokens::COMMENT_TOKENS[$tokens[$i]['code']]) === true
+                || isset(Tokens::$commentTokens[$tokens[$i]['code']]) === true
             ) {
                 continue;
             }
@@ -133,8 +134,8 @@ class ControlStructureSpacingSniff implements Sniff
             }
 
             // Leave indentation inside multi-line strings.
-            if (isset(Tokens::TEXT_STRING_TOKENS[$tokens[$i]['code']]) === true
-                || isset(Tokens::HEREDOC_TOKENS[$tokens[$i]['code']]) === true
+            if (isset(Tokens::$textStringTokens[$tokens[$i]['code']]) === true
+                || isset(Tokens::$heredocTokens[$tokens[$i]['code']]) === true
             ) {
                 continue;
             }
@@ -161,7 +162,7 @@ class ControlStructureSpacingSniff implements Sniff
                     }
                 }
             }
-        }
+        }//end for
 
         // Check the closing parenthesis.
         $prev = $phpcsFile->findPrevious(T_WHITESPACE, ($parenCloser - 1), $parenOpener, true);
@@ -189,8 +190,8 @@ class ControlStructureSpacingSniff implements Sniff
 
                     $phpcsFile->fixer->endChangeset();
                 }
-            }
-        }
+            }//end if
+        }//end if
 
         if ($tokens[$parenCloser]['line'] !== $tokens[$prev]['line']) {
             $requiredIndent = ($tokens[$first]['column'] - 1);
@@ -212,5 +213,8 @@ class ControlStructureSpacingSniff implements Sniff
                 }
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

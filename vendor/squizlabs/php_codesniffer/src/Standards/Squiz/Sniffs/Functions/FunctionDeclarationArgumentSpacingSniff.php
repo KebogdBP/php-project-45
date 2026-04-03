@@ -3,8 +3,7 @@
  * Checks that arguments in function declarations are spaced correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -52,7 +51,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
             T_CLOSURE,
             T_FN,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -64,7 +64,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
@@ -82,11 +82,13 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
         if ($tokens[$stackPtr]['code'] === T_CLOSURE) {
             $use = $phpcsFile->findNext(T_USE, ($tokens[$stackPtr]['parenthesis_closer'] + 1), $tokens[$stackPtr]['scope_opener']);
-            if ($use !== false && isset($tokens[$use]['parenthesis_opener']) === true) {
-                $this->processBracket($phpcsFile, $tokens[$use]['parenthesis_opener']);
+            if ($use !== false) {
+                $openBracket = $phpcsFile->findNext(T_OPEN_PARENTHESIS, ($use + 1), null);
+                $this->processBracket($phpcsFile, $openBracket);
             }
         }
-    }
+
+    }//end process()
 
 
     /**
@@ -98,14 +100,19 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
      *
      * @return void
      */
-    public function processBracket(File $phpcsFile, int $openBracket)
+    public function processBracket($phpcsFile, $openBracket)
     {
         $tokens       = $phpcsFile->getTokens();
         $closeBracket = $tokens[$openBracket]['parenthesis_closer'];
         $multiLine    = ($tokens[$openBracket]['line'] !== $tokens[$closeBracket]['line']);
 
-        $stackPtr = $tokens[$openBracket]['parenthesis_owner'];
-        $params   = $phpcsFile->getMethodParameters($stackPtr);
+        if (isset($tokens[$openBracket]['parenthesis_owner']) === true) {
+            $stackPtr = $tokens[$openBracket]['parenthesis_owner'];
+        } else {
+            $stackPtr = $phpcsFile->findPrevious(T_USE, ($openBracket - 1));
+        }
+
+        $params = $phpcsFile->getMethodParameters($stackPtr);
 
         if (empty($params) === true) {
             // Check spacing around parenthesis.
@@ -133,8 +140,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                 // No params, so we don't check normal spacing rules.
                 return;
-            }
-        }
+            }//end if
+        }//end if
 
         foreach ($params as $paramNumber => $param) {
             if ($param['pass_by_reference'] === true) {
@@ -160,8 +167,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                         $phpcsFile->fixer->endChangeset();
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             if ($param['variable_length'] === true) {
                 $variadicToken = $param['variadic_token'];
@@ -186,8 +193,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                         $phpcsFile->fixer->endChangeset();
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             if (isset($param['default_equal_token']) === true) {
                 $equalToken = $param['default_equal_token'];
@@ -195,12 +202,12 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                 $spacesBefore = 0;
                 if ($tokens[$param['token']]['line'] !== $tokens[$equalToken]['line']) {
                     $spacesBefore = 'newline';
-                } elseif ($tokens[($param['token'] + 1)]['code'] === T_WHITESPACE) {
+                } else if ($tokens[($param['token'] + 1)]['code'] === T_WHITESPACE) {
                     $spacesBefore = $tokens[($param['token'] + 1)]['length'];
                 }
 
                 if ($spacesBefore !== $this->equalsSpacing) {
-                    $error = 'Incorrect spacing between argument "%s" and equals sign; expected ' . $this->equalsSpacing . ' but found %s';
+                    $error = 'Incorrect spacing between argument "%s" and equals sign; expected '.$this->equalsSpacing.' but found %s';
                     $data  = [
                         $param['name'],
                         $spacesBefore,
@@ -224,17 +231,17 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                             $phpcsFile->fixer->endChangeset();
                         }
                     }
-                }
+                }//end if
 
                 $spacesAfter = 0;
                 if ($tokens[$equalToken]['line'] !== $tokens[$param['default_token']]['line']) {
                     $spacesAfter = 'newline';
-                } elseif ($tokens[($equalToken + 1)]['code'] === T_WHITESPACE) {
+                } else if ($tokens[($equalToken + 1)]['code'] === T_WHITESPACE) {
                     $spacesAfter = $tokens[($equalToken + 1)]['length'];
                 }
 
                 if ($spacesAfter !== $this->equalsSpacing) {
-                    $error = 'Incorrect spacing between default value and equals sign for argument "%s"; expected ' . $this->equalsSpacing . ' but found %s';
+                    $error = 'Incorrect spacing between default value and equals sign for argument "%s"; expected '.$this->equalsSpacing.' but found %s';
                     $data  = [
                         $param['name'],
                         $spacesAfter,
@@ -258,8 +265,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                             $phpcsFile->fixer->endChangeset();
                         }
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             if ($param['type_hint_token'] !== false) {
                 $typeHintToken = $param['type_hint_end_token'];
@@ -280,7 +287,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                         $data[] = strlen($gap);
                     } else {
                         // Gap contains more than just spaces: render these for better clarity.
-                        $data[] = '"' . Common::prepareForOutput($gap) . '"';
+                        $data[] = '"'.Common::prepareForOutput($gap).'"';
                     }
 
                     $fix = $phpcsFile->addFixableError($error, $typeHintToken, 'SpacingAfterHint', $data);
@@ -294,8 +301,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                         $phpcsFile->fixer->endChangeset();
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             if (isset($param['visibility_token']) === true && $param['visibility_token'] !== false) {
                 $visibilityToken      = $param['visibility_token'];
@@ -306,7 +313,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                     && $tokens[$visibilityToken]['line'] !== $tokens[$afterVisibilityToken]['line']
                 ) {
                     $spacesAfter = 'newline';
-                } elseif ($tokens[($visibilityToken + 1)]['code'] === T_WHITESPACE) {
+                } else if ($tokens[($visibilityToken + 1)]['code'] === T_WHITESPACE) {
                     $spacesAfter = $tokens[($visibilityToken + 1)]['length'];
                 }
 
@@ -317,7 +324,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                         $spacesAfter,
                     ];
 
-                    $fix = $phpcsFile->addFixableError($error, $visibilityToken, 'SpacingAfterVisibility', $data);
+                    $fix = $phpcsFile->addFixableError($error, $visibilityToken, 'SpacingAfterVisbility', $data);
                     if ($fix === true) {
                         $phpcsFile->fixer->beginChangeset();
                         $phpcsFile->fixer->addContent($visibilityToken, ' ');
@@ -328,8 +335,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                         $phpcsFile->fixer->endChangeset();
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             if (isset($param['set_visibility_token']) === true && $param['set_visibility_token'] !== false) {
                 $visibilityToken      = $param['set_visibility_token'];
@@ -340,7 +347,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                     && $tokens[$visibilityToken]['line'] !== $tokens[$afterVisibilityToken]['line']
                 ) {
                     $spacesAfter = 'newline';
-                } elseif ($tokens[($visibilityToken + 1)]['code'] === T_WHITESPACE) {
+                } else if ($tokens[($visibilityToken + 1)]['code'] === T_WHITESPACE) {
                     $spacesAfter = $tokens[($visibilityToken + 1)]['length'];
                 }
 
@@ -362,8 +369,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                         $phpcsFile->fixer->endChangeset();
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             if (isset($param['readonly_token']) === true) {
                 $readonlyToken      = $param['readonly_token'];
@@ -374,7 +381,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                     && $tokens[$readonlyToken]['line'] !== $tokens[$afterReadonlyToken]['line']
                 ) {
                     $spacesAfter = 'newline';
-                } elseif ($tokens[($readonlyToken + 1)]['code'] === T_WHITESPACE) {
+                } else if ($tokens[($readonlyToken + 1)]['code'] === T_WHITESPACE) {
                     $spacesAfter = $tokens[($readonlyToken + 1)]['length'];
                 }
 
@@ -393,8 +400,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                         $phpcsFile->fixer->endChangeset();
                     }
-                }
-            }
+                }//end if
+            }//end if
 
             $commaToken = false;
             if ($paramNumber > 0 && $params[($paramNumber - 1)]['comma_token'] !== false) {
@@ -402,12 +409,12 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
             }
 
             if ($commaToken !== false) {
-                $endOfPreviousParam = $phpcsFile->findPrevious(Tokens::EMPTY_TOKENS, ($commaToken - 1), null, true);
+                $endOfPreviousParam = $phpcsFile->findPrevious(Tokens::$emptyTokens, ($commaToken - 1), null, true);
 
                 $spaceBeforeComma = 0;
                 if ($tokens[$endOfPreviousParam]['line'] !== $tokens[$commaToken]['line']) {
                     $spaceBeforeComma = 'newline';
-                } elseif ($tokens[($commaToken - 1)]['code'] === T_WHITESPACE) {
+                } else if ($tokens[($commaToken - 1)]['code'] === T_WHITESPACE) {
                     $spaceBeforeComma = $tokens[($commaToken - 1)]['length'];
                 }
 
@@ -420,7 +427,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                     $fix = $phpcsFile->addFixableError($error, $commaToken, 'SpaceBeforeComma', $data);
                     if ($fix === true) {
-                        $startOfCurrentParam = $phpcsFile->findNext(Tokens::EMPTY_TOKENS, ($commaToken + 1), null, true);
+                        $startOfCurrentParam = $phpcsFile->findNext(Tokens::$emptyTokens, ($commaToken + 1), null, true);
 
                         $phpcsFile->fixer->beginChangeset();
                         $phpcsFile->fixer->addContent($endOfPreviousParam, ',');
@@ -447,13 +454,13 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                         }
 
                         $phpcsFile->fixer->endChangeset();
-                    }
-                }
+                    }//end if
+                }//end if
 
                 // Don't check spacing after the comma if it is the last content on the line.
                 $checkComma = true;
                 if ($multiLine === true) {
-                    $next = $phpcsFile->findNext(Tokens::EMPTY_TOKENS, ($commaToken + 1), $closeBracket, true);
+                    $next = $phpcsFile->findNext(Tokens::$emptyTokens, ($commaToken + 1), $closeBracket, true);
                     if ($tokens[$next]['line'] !== $tokens[$commaToken]['line']) {
                         $checkComma = false;
                     }
@@ -467,9 +474,9 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                     if (isset($param['property_visibility']) === true) {
                         $typeOfNext      = 'property modifier';
                         $typeOfNextShort = 'PropertyModifier';
-                        $modifier        = $phpcsFile->findNext(Tokens::EMPTY_TOKENS, ($commaToken + 1), $param['token'], true);
+                        $modifier        = $phpcsFile->findNext(Tokens::$emptyTokens, ($commaToken + 1), $param['token'], true);
                         $contentOfNext   = $tokens[$modifier]['content'];
-                    } elseif ($param['type_hint_token'] !== false) {
+                    } else if ($param['type_hint_token'] !== false) {
                         $typeOfNext      = 'type hint';
                         $typeOfNextShort = 'Hint';
                         $contentOfNext   = $param['type_hint'];
@@ -482,7 +489,7 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
 
                     if ($spacesAfter === 0) {
                         $error     = 'Expected 1 space between comma and %s "%s"; 0 found';
-                        $errorCode = 'NoSpaceBefore' . $typeOfNextShort;
+                        $errorCode = 'NoSpaceBefore'.$typeOfNextShort;
                         $data      = [
                             $typeOfNext,
                             $contentOfNext,
@@ -492,9 +499,9 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                         if ($fix === true) {
                             $phpcsFile->fixer->addContent($commaToken, ' ');
                         }
-                    } elseif ($spacesAfter !== 1) {
+                    } else if ($spacesAfter !== 1) {
                         $error     = 'Expected 1 space between comma and %s "%s"; %s found';
-                        $errorCode = 'SpacingBefore' . $typeOfNextShort;
+                        $errorCode = 'SpacingBefore'.$typeOfNextShort;
                         $data      = [
                             $typeOfNext,
                             $contentOfNext,
@@ -505,10 +512,10 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                         if ($fix === true) {
                             $phpcsFile->fixer->replaceToken(($commaToken + 1), ' ');
                         }
-                    }
-                }
-            }
-        }
+                    }//end if
+                }//end if
+            }//end if
+        }//end foreach
 
         // Only check spacing around parenthesis for single line definitions.
         if ($multiLine === true) {
@@ -558,5 +565,8 @@ class FunctionDeclarationArgumentSpacingSniff implements Sniff
                 }
             }
         }
-    }
-}
+
+    }//end processBracket()
+
+
+}//end class

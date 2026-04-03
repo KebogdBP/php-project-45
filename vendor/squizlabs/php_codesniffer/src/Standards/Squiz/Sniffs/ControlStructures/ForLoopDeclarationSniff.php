@@ -3,8 +3,7 @@
  * Verifies that there is a space between each condition of for loops.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -38,6 +37,16 @@ class ForLoopDeclarationSniff implements Sniff
      */
     public $ignoreNewlines = false;
 
+    /**
+     * A list of tokenizers this sniff supports.
+     *
+     * @var array
+     */
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+    ];
+
 
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -47,7 +56,8 @@ class ForLoopDeclarationSniff implements Sniff
     public function register()
     {
         return [T_FOR];
-    }
+
+    }//end register()
 
 
     /**
@@ -59,7 +69,7 @@ class ForLoopDeclarationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $this->requiredSpacesAfterOpen   = (int) $this->requiredSpacesAfterOpen;
         $this->requiredSpacesBeforeClose = (int) $this->requiredSpacesBeforeClose;
@@ -67,7 +77,8 @@ class ForLoopDeclarationSniff implements Sniff
 
         $openingBracket = $phpcsFile->findNext(T_OPEN_PARENTHESIS, $stackPtr);
         if ($openingBracket === false || isset($tokens[$openingBracket]['parenthesis_closer']) === false) {
-            // Parse error or live coding.
+            $error = 'Possible parse error: no opening/closing parenthesis for FOR keyword';
+            $phpcsFile->addWarning($error, $stackPtr, 'NoOpenBracket');
             return;
         }
 
@@ -95,12 +106,12 @@ class ForLoopDeclarationSniff implements Sniff
                     $phpcsFile->fixer->endChangeset();
                 }
             }
-        } elseif ($this->requiredSpacesAfterOpen > 0) {
+        } else if ($this->requiredSpacesAfterOpen > 0) {
             $nextNonWhiteSpace = $phpcsFile->findNext(T_WHITESPACE, ($openingBracket + 1), $closingBracket, true);
             $spaceAfterOpen    = 0;
             if ($tokens[$openingBracket]['line'] !== $tokens[$nextNonWhiteSpace]['line']) {
                 $spaceAfterOpen = 'newline';
-            } elseif ($tokens[($openingBracket + 1)]['code'] === T_WHITESPACE) {
+            } else if ($tokens[($openingBracket + 1)]['code'] === T_WHITESPACE) {
                 $spaceAfterOpen = $tokens[($openingBracket + 1)]['length'];
             }
 
@@ -128,13 +139,13 @@ class ForLoopDeclarationSniff implements Sniff
                         $phpcsFile->fixer->endChangeset();
                     }
                 }
-            }
-        }
+            }//end if
+        }//end if
 
         $prevNonWhiteSpace  = $phpcsFile->findPrevious(T_WHITESPACE, ($closingBracket - 1), $openingBracket, true);
         $beforeClosefixable = true;
         if ($tokens[$prevNonWhiteSpace]['line'] !== $tokens[$closingBracket]['line']
-            && isset(Tokens::EMPTY_TOKENS[$tokens[$prevNonWhiteSpace]['code']]) === true
+            && isset(Tokens::$emptyTokens[$tokens[$prevNonWhiteSpace]['code']]) === true
         ) {
             $beforeClosefixable = false;
         }
@@ -163,11 +174,11 @@ class ForLoopDeclarationSniff implements Sniff
                     $phpcsFile->fixer->endChangeset();
                 }
             }
-        } elseif ($this->requiredSpacesBeforeClose > 0) {
+        } else if ($this->requiredSpacesBeforeClose > 0) {
             $spaceBeforeClose = 0;
             if ($tokens[$closingBracket]['line'] !== $tokens[$prevNonWhiteSpace]['line']) {
                 $spaceBeforeClose = 'newline';
-            } elseif ($tokens[($closingBracket - 1)]['code'] === T_WHITESPACE) {
+            } else if ($tokens[($closingBracket - 1)]['code'] === T_WHITESPACE) {
                 $spaceBeforeClose = $tokens[($closingBracket - 1)]['length'];
             }
 
@@ -200,8 +211,8 @@ class ForLoopDeclarationSniff implements Sniff
                         }
                     }
                 }
-            }
-        }
+            }//end if
+        }//end if
 
         /*
          * Check whitespace around each of the semicolon tokens.
@@ -243,7 +254,7 @@ class ForLoopDeclarationSniff implements Sniff
             if ($semicolonCount !== 1 || $prevNonWhiteSpace !== $openingBracket) {
                 if ($tokens[($semicolon - 1)]['code'] === T_WHITESPACE) {
                     $error     = 'Whitespace found before %s semicolon of FOR loop';
-                    $errorCode = 'SpacingBefore' . $humanReadableCode;
+                    $errorCode = 'SpacingBefore'.$humanReadableCode;
                     $fix       = $phpcsFile->addFixableError($error, $semicolon, $errorCode, $data);
                     if ($fix === true) {
                         $phpcsFile->fixer->beginChangeset();
@@ -264,12 +275,12 @@ class ForLoopDeclarationSniff implements Sniff
                     && $tokens[($semicolon + 1)]['code'] !== T_SEMICOLON
                 ) {
                     $error     = 'Expected 1 space after %s semicolon of FOR loop; 0 found';
-                    $errorCode = 'NoSpaceAfter' . $humanReadableCode;
+                    $errorCode = 'NoSpaceAfter'.$humanReadableCode;
                     $fix       = $phpcsFile->addFixableError($error, $semicolon, $errorCode, $data);
                     if ($fix === true) {
                         $phpcsFile->fixer->addContent($semicolon, ' ');
                     }
-                } elseif ($tokens[($semicolon + 1)]['code'] === T_WHITESPACE
+                } else if ($tokens[($semicolon + 1)]['code'] === T_WHITESPACE
                     && $tokens[$nextNonWhiteSpace]['code'] !== T_SEMICOLON
                 ) {
                     $spaces = $tokens[($semicolon + 1)]['length'];
@@ -282,7 +293,7 @@ class ForLoopDeclarationSniff implements Sniff
                         || $spaces !== 'newline')
                     ) {
                         $error     = 'Expected 1 space after %s semicolon of FOR loop; %s found';
-                        $errorCode = 'SpacingAfter' . $humanReadableCode;
+                        $errorCode = 'SpacingAfter'.$humanReadableCode;
                         $data[]    = $spaces;
                         $fix       = $phpcsFile->addFixableError($error, $semicolon, $errorCode, $data);
                         if ($fix === true) {
@@ -295,8 +306,11 @@ class ForLoopDeclarationSniff implements Sniff
                             $phpcsFile->fixer->endChangeset();
                         }
                     }
-                }
-            }
+                }//end if
+            }//end if
         } while ($semicolonCount < 2);
-    }
-}
+
+    }//end process()
+
+
+}//end class

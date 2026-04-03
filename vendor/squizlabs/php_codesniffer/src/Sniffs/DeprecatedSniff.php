@@ -58,4 +58,6 @@ interface DeprecatedSniff
      * @return string
      */
     public function getDeprecationMessage();
-}
+
+
+}//end interface

@@ -3,8 +3,7 @@
  * Ensures namespaces are declared correctly.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -12,6 +11,7 @@ namespace PHP_CodeSniffer\Standards\PSR2\Sniffs\Namespaces;
 
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Util\Tokens;
 
 class NamespaceDeclarationSniff implements Sniff
 {
@@ -25,7 +25,8 @@ class NamespaceDeclarationSniff implements Sniff
     public function register()
     {
         return [T_NAMESPACE];
-    }
+
+    }//end register()
 
 
     /**
@@ -37,9 +38,15 @@ class NamespaceDeclarationSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
+
+        $nextNonEmpty = $phpcsFile->findNext(Tokens::$emptyTokens, ($stackPtr + 1), null, true);
+        if ($tokens[$nextNonEmpty]['code'] === T_NS_SEPARATOR) {
+            // Namespace keyword as operator. Not a declaration.
+            return;
+        }
 
         $end = $phpcsFile->findEndOfStatement($stackPtr);
         for ($i = ($end + 1); $i < ($phpcsFile->numTokens - 1); $i++) {
@@ -86,5 +93,8 @@ class NamespaceDeclarationSniff implements Sniff
                 $phpcsFile->fixer->endChangeset();
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class

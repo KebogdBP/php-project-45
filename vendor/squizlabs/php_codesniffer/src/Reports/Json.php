@@ -4,8 +4,7 @@
  *
  * @author    Jeffrey Fisher <jeffslofish@gmail.com>
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -32,13 +31,13 @@ class Json implements Report
      *
      * @return bool
      */
-    public function generateFileReport(array $report, File $phpcsFile, bool $showSources = false, int $width = 80)
+    public function generateFileReport($report, File $phpcsFile, $showSources=false, $width=80)
     {
         $filename = str_replace('\\', '\\\\', $report['filename']);
         $filename = str_replace('"', '\"', $filename);
         $filename = str_replace('/', '\/', $filename);
-        echo '"' . $filename . '":{';
-        echo '"errors":' . $report['errors'] . ',"warnings":' . $report['warnings'] . ',"messages":[';
+        echo '"'.$filename.'":{';
+        echo '"errors":'.$report['errors'].',"warnings":'.$report['warnings'].',"messages":[';
 
         $messages = '';
         foreach ($report['messages'] as $line => $lineErrors) {
@@ -58,16 +57,17 @@ class Json implements Report
                     $messagesObject->column  = $column;
                     $messagesObject->fixable = $fixable;
 
-                    $messages .= json_encode($messagesObject) . ',';
+                    $messages .= json_encode($messagesObject).",";
                 }
             }
-        }
+        }//end foreach
 
         echo rtrim($messages, ',');
         echo ']},';
 
         return true;
-    }
+
+    }//end generateFileReport()
 
 
     /**
@@ -87,18 +87,21 @@ class Json implements Report
      * @return void
      */
     public function generate(
-        string $cachedData,
-        int $totalFiles,
-        int $totalErrors,
-        int $totalWarnings,
-        int $totalFixable,
-        bool $showSources = false,
-        int $width = 80,
-        bool $interactive = false,
-        bool $toScreen = true
+        $cachedData,
+        $totalFiles,
+        $totalErrors,
+        $totalWarnings,
+        $totalFixable,
+        $showSources=false,
+        $width=80,
+        $interactive=false,
+        $toScreen=true
     ) {
-        echo '{"totals":{"errors":' . $totalErrors . ',"warnings":' . $totalWarnings . ',"fixable":' . $totalFixable . '},"files":{';
+        echo '{"totals":{"errors":'.$totalErrors.',"warnings":'.$totalWarnings.',"fixable":'.$totalFixable.'},"files":{';
         echo rtrim($cachedData, ',');
-        echo '}}' . PHP_EOL;
-    }
-}
+        echo "}}".PHP_EOL;
+
+    }//end generate()
+
+
+}//end class

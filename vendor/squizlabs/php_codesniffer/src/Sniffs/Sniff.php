@@ -8,8 +8,7 @@
  * PHP_CodeSniffer file in which the token was found.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -75,5 +74,7 @@ interface Sniff
      *                  pointer is reached. Return `$phpcsFile->numTokens` to skip
      *                  the rest of the file.
      */
-    public function process(File $phpcsFile, int $stackPtr);
-}
+    public function process(File $phpcsFile, $stackPtr);
+
+
+}//end interface

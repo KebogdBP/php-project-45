@@ -3,8 +3,7 @@
  * Checks that the opening brace of a class/interface/trait is on the same line as the class declaration.
  *
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2023 Squiz Pty Ltd (ABN 77 084 670 600)
- * @copyright 2023 PHPCSStandards and contributors
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/PHPCSStandards/PHP_CodeSniffer/blob/HEAD/licence.txt BSD Licence
  */
 
@@ -30,7 +29,8 @@ class OpeningBraceSameLineSniff implements Sniff
             T_TRAIT,
             T_ENUM,
         ];
-    }
+
+    }//end register()
 
 
     /**
@@ -42,14 +42,15 @@ class OpeningBraceSameLineSniff implements Sniff
      *
      * @return void
      */
-    public function process(File $phpcsFile, int $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens          = $phpcsFile->getTokens();
         $scopeIdentifier = $phpcsFile->findNext(T_STRING, ($stackPtr + 1));
-        $errorData       = [strtolower($tokens[$stackPtr]['content']) . ' ' . $tokens[$scopeIdentifier]['content']];
+        $errorData       = [strtolower($tokens[$stackPtr]['content']).' '.$tokens[$scopeIdentifier]['content']];
 
         if (isset($tokens[$stackPtr]['scope_opener']) === false) {
-            // Parse error or live coding.
+            $error = 'Possible parse error: %s missing opening or closing brace';
+            $phpcsFile->addWarning($error, $stackPtr, 'MissingBrace', $errorData);
             return;
         }
 
@@ -98,7 +99,7 @@ class OpeningBraceSameLineSniff implements Sniff
         // Is there precisely one space before the opening brace ?
         if ($tokens[($openingBrace - 1)]['code'] !== T_WHITESPACE) {
             $length = 0;
-        } elseif ($tokens[($openingBrace - 1)]['content'] === "\t") {
+        } else if ($tokens[($openingBrace - 1)]['content'] === "\t") {
             $length = '\t';
         } else {
             $length = $tokens[($openingBrace - 1)]['length'];
@@ -116,5 +117,8 @@ class OpeningBraceSameLineSniff implements Sniff
                 }
             }
         }
-    }
-}
+
+    }//end process()
+
+
+}//end class
