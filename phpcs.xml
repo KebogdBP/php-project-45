@@ -9,4 +9,6 @@
     <exclude-pattern>*/vendor/*</exclude-pattern>
 
     <rule ref="PSR12" />
+    <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
+    <rule ref="Squiz.NamingConventions.ValidFunctionName.NotCamelCaps"/>
 </ruleset>
