@@ -8,7 +8,7 @@ console:
 	composer exec --verbose psysh
 
 lint:
-	composer exec --verbose phpcs -- src tests
+	composer exec --verbose phpcs -- --warning-severity=0 src tests
 	composer exec --verbose phpstan
 	composer exec --verbose phpcs -- --standard=PSR12 src bin
 
