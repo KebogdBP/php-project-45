@@ -1,5 +1,5 @@
 {
-  "name": "kebogd/php-package-45",
+  "name": "kebogdbp/php-package-45",
   "bin": [
     "bin/php-package",
     "bin/brain-games",
