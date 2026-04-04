@@ -9,5 +9,9 @@
     <exclude-pattern>*/vendor/*</exclude-pattern>
 
     <rule ref="PSR12" />
+    <rule ref="Squiz.NamingConventions.ValidVariableName">
+        <exclude name="Squiz.NamingConventions.ValidVariableName.PrivateNoUnderscore"/>
+        <exclude name="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
+    </rule>
     <rule ref="Squiz.NamingConventions.ValidFunctionName.NotCamelCaps"/>
 </ruleset>
