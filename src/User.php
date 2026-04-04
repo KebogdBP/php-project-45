@@ -6,8 +6,8 @@ use Illuminate\Support\Collection;
 
 class User
 {
-    public readonly string $name;
-    public readonly Collection $children;
+    public string $name;
+    public Collection $children;
 
     public function __construct(string $name, array $children = [])
     {
