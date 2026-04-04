@@ -9,7 +9,7 @@ console:
 
 lint:
 	composer exec --verbose phpcs -- --warning-severity=0 src tests
-	composer exec --verbose phpstan
+	composer exec --verbose phpstan -- --memory-limit=256M
 	composer exec --verbose phpcs -- --standard=PSR12 src bin
 
 lint-fix:
