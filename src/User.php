@@ -6,22 +6,22 @@ use Illuminate\Support\Collection;
 
 class User
 {
-    private string $name;
-    private Collection $children;
+    private string $_name;
+    private Collection $_children;
 
     public function __construct(string $name, array $children = [])
     {
-        $this->name = $name;
-        $this->children = collect($children);
+        $this->_name = $name;
+        $this->_children = collect($children);
     }
 
     public function getName(): string
     {
-        return $this->name;
+        return $this->_name;
     }
 
     public function getChildren(): Collection
     {
-        return $this->children;
+        return $this->_children;
     }
 }
