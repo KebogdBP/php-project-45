@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1775166642">
-  <project timestamp="1775166642" name="Clover Coverage">
+<coverage generated="1775300459">
+  <project timestamp="1775300459" name="Clover Coverage">
     <file name="/home/kebogd/Brain-games/src/Calc.php">
       <line num="9" type="stmt" count="0"/>
       <line num="12" type="stmt" count="0"/>
@@ -104,18 +104,18 @@
     <package name="Php\Package">
       <file name="/home/kebogd/Brain-games/src/User.php">
         <class name="Php\Package\User" namespace="Php\Package">
-          <metrics complexity="3" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="0" elements="7" coveredelements="0"/>
+          <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="4" elements="7" coveredelements="7"/>
         </class>
-        <line num="12" type="method" name="__construct" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="14" type="stmt" count="0"/>
-        <line num="15" type="stmt" count="0"/>
-        <line num="18" type="method" name="getName" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="20" type="stmt" count="0"/>
-        <line num="23" type="method" name="getChildren" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="25" type="stmt" count="0"/>
-        <metrics loc="28" ncloc="28" classes="1" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="0" elements="7" coveredelements="0"/>
+        <line num="12" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="14" type="stmt" count="1"/>
+        <line num="15" type="stmt" count="1"/>
+        <line num="18" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="20" type="stmt" count="1"/>
+        <line num="23" type="method" name="getChildren" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="25" type="stmt" count="1"/>
+        <metrics loc="28" ncloc="28" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="4" elements="7" coveredelements="7"/>
       </file>
     </package>
-    <metrics files="8" loc="255" ncloc="247" classes="1" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="83" coveredstatements="0" elements="86" coveredelements="0"/>
+    <metrics files="8" loc="255" ncloc="247" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="83" coveredstatements="4" elements="86" coveredelements="7"/>
   </project>
 </coverage>
