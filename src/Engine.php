@@ -15,7 +15,7 @@ function play(string $description, callable $generateData, string $name): void
         line("Question: %s", $question);
         $userAnswer = prompt('Your answer');
 
-        if ((string) $userAnswer !== (string) $correctAnswer) {
+        if ($userAnswer !== $correctAnswer) {
             line("'%s' is wrong answer ;(. Correct answer was '%s'.", $userAnswer, $correctAnswer);
             line("Let's try again, %s!", $name);
             return;
