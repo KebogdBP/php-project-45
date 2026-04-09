@@ -16,7 +16,7 @@ function start(string $name): void
         $question = "$num1 $num2";
         $answer = gcd($num1, $num2);
 
-        return [$question, $answer];
+        return [$question, (string) $answer];
     };
 
     play($description, $generateData, $name);
