@@ -42,6 +42,9 @@ brain-calc:
 brain-progression:
 	./bin/brain-progression
 
+brain-gcd:
+	./bin/brain-gcd
+
 brain-prime:
 	./bin/brain-prime
 
