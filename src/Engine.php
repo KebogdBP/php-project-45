@@ -13,7 +13,7 @@ function play(string $description, callable $generateData, string $name): void
         [$question, $correctAnswer] = $generateData();
 
         line("Question: %s", $question);
-        $userAnswer = trim(prompt('Your answer'));
+        $userAnswer = prompt('Your answer');
 
         if ($userAnswer !== $correctAnswer) {
             line("'%s' is wrong answer ;(. Correct answer was '%s'.", $userAnswer, $correctAnswer);
