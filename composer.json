@@ -13,8 +13,8 @@
   "type": "library",
   "authors": [
     {
-      "name": "Kirill Mokevnin",
-      "email": "mokevnin@gmail.com"
+      "name": "Igor Bogdanov",
+      "email": "batvamail@gmail.com"
     }
   ],
   "description": "hexlet php-package",
